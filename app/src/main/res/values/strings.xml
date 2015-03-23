@@ -7,6 +7,8 @@
     <string name="title_section2">Songs</string>
     <string name="title_section3">Play</string>
 
+    <string name="song_sound_spinner">Song Change Sound</string>
+
     <string name="ounces">Ounces</string>
     <string name="beers">Beers</string>
     <string name="shots">Shots</string>
@@ -23,12 +25,15 @@
     <string name="settings_text4">Enable Challenges</string>
     <string name="settings_text5">Challenge Frequency</string>
     <string name="settings_text6">Enable Song Change Sound</string>
-    <string name="settings_text7">Enable Sound when Beer is Empty</string>
+    <string name="settings_text7">Enable Beer Gone Sound</string>
     <string name="settings_text8">Random Songs (From SD Card)</string>
     <string name="genre_button">Filter by Genre</string>
 
     <string name="duration_prompt">Select a game duration</string>
     <string name="challenge_frequency_prompt">Select a challenge frequency</string>
+
+    <string name="sound_button">Choose</string>
+
 
     <string-array name="duration_array">
         <item>30 Minutes</item>

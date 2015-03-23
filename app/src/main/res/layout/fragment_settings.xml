@@ -5,31 +5,6 @@
     android:orientation="vertical">
 
     <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:orientation="horizontal"
-        android:layout_weight="1">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/settings_text1"
-            android:layout_alignParentRight="false"
-            android:paddingStart="5dp"
-            android:layout_centerVertical="true" />
-
-        <ToggleButton
-            android:onClick="toggleOneOunce"
-            android:id="@+id/one_ounce_shot"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="false"
-            android:layout_centerVertical="true" />
-
-    </RelativeLayout>
-
-    <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="0dp"
         android:orientation="horizontal"
@@ -152,8 +127,18 @@
             android:onClick="changeSoundToggle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/song_sound_button"
+            android:layout_toStartOf="@+id/song_sound_button" />
+
+        <Button
+            android:id="@+id/song_sound_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="songSoundSelection"
             android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true" />
+            android:layout_centerVertical="true"
+            android:text="@string/sound_button"
+            android:enabled="false" />
 
     </RelativeLayout>
 
@@ -175,7 +160,42 @@
             android:onClick="beerSoundToggle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/beer_sound_button"
+            android:layout_toStartOf="@+id/beer_sound_button" />
+
+        <Button
+            android:id="@+id/beer_sound_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="beerSoundSelection"
             android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:text="@string/sound_button"
+            android:enabled="false" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="horizontal"
+        android:layout_weight="1">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_text1"
+            android:layout_alignParentRight="false"
+            android:paddingStart="5dp"
+            android:layout_centerVertical="true" />
+
+        <ToggleButton
+            android:onClick="toggleOneOunce"
+            android:id="@+id/one_ounce_shot"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="false"
             android:layout_centerVertical="true" />
 
     </RelativeLayout>
