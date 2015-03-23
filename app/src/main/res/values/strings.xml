@@ -1,0 +1,51 @@
+<resources>
+    <string name="app_name">PowerHour</string>
+
+    <string name="action_settings">Meh</string>
+
+    <string name="title_section1">Settings</string>
+    <string name="title_section2">Songs</string>
+    <string name="title_section3">Play</string>
+
+    <string name="ounces">Ounces</string>
+    <string name="beers">Beers</string>
+    <string name="shots">Shots</string>
+    <string name="start">Start</string>
+    <string name="pause">Pause</string>
+    <string name="resume">Resume</string>
+    <string name="zero">0</string>
+    <string name="ounce_zero">0.0</string>
+    <string name="time_zero">0:00</string>
+
+    <string name="settings_text1">Change to One Ounce Shots</string>
+    <string name="settings_text2">Enable Pause Function</string>
+    <string name="settings_text3">Duration in Minutes</string>
+    <string name="settings_text4">Enable Challenges</string>
+    <string name="settings_text5">Challenge Frequency</string>
+    <string name="settings_text6">Enable Song Change Sound</string>
+    <string name="settings_text7">Enable Sound when Beer is Empty</string>
+    <string name="settings_text8">Random Songs (From SD Card)</string>
+    <string name="genre_button">Filter by Genre</string>
+
+    <string name="duration_prompt">Select a game duration</string>
+    <string name="challenge_frequency_prompt">Select a challenge frequency</string>
+
+    <string-array name="duration_array">
+        <item>30 Minutes</item>
+        <item>60 Minutes</item>
+        <item>90 Minutes</item>
+        <item>100 Minutes</item>
+    </string-array>
+
+    <string-array name="challenge_frequency_array">
+        <item>Every 5 Minutes</item>
+        <item>Every 10 Minutes</item>
+        <item>Every 15 Minutes</item>
+        <item>Every 20 Minutes</item>
+        <item>Random</item>
+    </string-array>
+    <string name="title_activity_notification">NotificationActivity</string>
+
+    <string name="hello_world">Hello world!</string>
+
+</resources>
