@@ -76,12 +76,14 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
     private static final Random randomGenerator = new Random();
 
     public static void setChallenge() {
+        Log.d("Challenge: ", "Challenge set in GameTimer class");
         gametimer.setCurrentChallenge(challenges.getRandomChallenge());
         challenge_text.setText(gametimer.getCurrentChallenge().getChallengeText());
     }
 
     // gets a random song
     public static Song getRandomSong() {
+        Log.d("Media: ", "Getting random song");
         int index = randomGenerator.nextInt(MusicFragment.songs.size());
         return MusicFragment.songs.get(index);
     }
@@ -97,6 +99,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
             currentSong = getRandomSong();
 
             if (currentSong.isSelected() && !currentSong.isPreviouslyPlayed()) { // if no more playable songs it will crash!
+                Log.d("Media: ", "Song okay to play");
                 currentSong.setPreviouslyPlayed(true);
                 mp.setDataSource(currentSong.getLocation());
                 mp.prepare();
@@ -104,8 +107,35 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 
                 notification.mBuilder.setContentText(currentSong.getArtist() + " - " + currentSong.getTitle());
 
+                song_artist_text.setText(currentSong.getArtist());
+                song_title_text.setText(currentSong.getTitle());
 
             } else {
+                Log.d("Media: ", "Song not playable... checking if there are playable songs remaining");
+                int count = 0;
+                for (int i = 0; i < MusicFragment.songs.size(); i++) {
+                    if (!MusicFragment.songs.get(i).isSelected() ||
+                            MusicFragment.songs.get(i).isPreviouslyPlayed()) {
+                        count++;
+                    }
+                }
+
+                if (MusicFragment.songs.size() == count) {
+                    Log.d("Media: ", "No playable songs... Attempting to reset previouslyPlayed tag on all songs");
+                    for (int i = 0; i < MusicFragment.songs.size(); i++) {
+                        MusicFragment.songs.get(i).setPreviouslyPlayed(false);
+                    }
+                    AlertDialog alertDialog = new AlertDialog.Builder(context).create();
+                    alertDialog.setTitle("Alert");
+                    alertDialog.setMessage("No remaining playable songs! Songs will now play multiple times.");
+                    alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
+                    alertDialog.show();
+                }
                 playSong();
             }
 
@@ -116,6 +146,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 
     // TODO: fix bug where song list is rearranged and rechecked
     public static void setSongAdapter(SongAdapter adapter) {
+        Log.d("Android: ", "songAdapter set on MainActivity");
         songAdapter = adapter;
     }
 
@@ -130,6 +161,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
      *  Creates the genre dialog
      */
     public void genreButton(View view) {
+        Log.d("Button: ", "genreButton");
         Dialog genreDialog = new Dialog(MainActivity.context);
         LayoutInflater li = (LayoutInflater) MainActivity.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         final View genre_view = li.inflate(R.layout.genreselctor, null, false);
@@ -152,6 +184,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
      *  Settings onClick methods
      */
     public void toggleOneOunce(View view) {
+        Log.d("Toggle: ", "toggleOneOunce");
         if (one_ounce_button.isChecked()) {
             settings.setShotSize(1);
         } else {
@@ -160,19 +193,23 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
     }
 
     public void toggleChallenges(View view) {
+        Log.d("Toggle: ", "toggleChallenges");
         settings.setChallengesEnabled(challenges_button.isChecked());
         challenge_spinner.setEnabled(challenges_button.isChecked());
     }
 
     public void togglePause(View view) {
+        Log.d("Toggle: ", "togglePause");
         settings.setPauseEnabled(toggle_pause_button.isChecked());
     }
 
     public void changeSoundToggle(View view) {
+        Log.d("Toggle: ", "changeSoundToggle");
         settings.setSongChange(change_sound_button.isChecked());
     }
 
     public void beerSoundToggle(View view) {
+        Log.d("Toggle: ", "beerSoundToggle");
         settings.setBeerGone(beer_sound_button.isChecked());
     }
 
@@ -292,13 +329,13 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
     public void onDestroy() {
         super.onDestroy();
         mp.stop();
-       // wl.release();
+        // wl.release();
         gametimer.cancelTimer();
-        if(notification != null) {
+        if (notification != null) {
             notification.mNotificationManager.cancel(notification.mId);
         }
         String msg = "Android: ";
-        Log.d(msg, "destroyed");
+        Log.d(msg, "Destroyed");
     }
 
     @Override
@@ -322,6 +359,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
      *  Button Methods
      */
     public void pauseButton(View view) {
+        Log.d("Button: ", "pauseButton");
         if (paused) {
             paused = false;
             gametimer.setTimer();
@@ -329,8 +367,10 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
             mp.start();
             pause_button.setActivated(false);
             pause_button.setText(R.string.pause);
+            toggle_pause_button.setEnabled(true);
         } else {
             paused = true;
+            toggle_pause_button.setEnabled(false);
             gametimer.cancelTimer();
             pause_button.setActivated(false);
             pause_button.setText(R.string.resume);
@@ -339,39 +379,40 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
     }
 
     public void playButton(View view) {
-
+        Log.d("Button: ", "playButton");
         gameRunning = true;
 
-        //if(MusicFragment.song_lv.getCount() > 60) {
+        // if(MusicFragment.songs.size() == 0) {
+
+        //  }
         notification.createNotification();
         gametimer.startTimer();
-        //}
 
         // enable the pause button if toggled
         if (settings.isPauseEnabled()) {
             pause_button.setEnabled(true);
         }
 
-
+        // to please the calls to the current challenge before one exists
         Challenge nullChallenge = new Challenge(false, "");
         gametimer.setCurrentChallenge(nullChallenge);
 
         // TODO: code duration function (game end)
 
-
         playSong();
 
         play_button.setEnabled(false);
-
     }
 
 
     public void songPressed(View view) {
+        Log.d("Pressed: ", "songPressed");
         (MusicFragment.songs.get(Integer.parseInt(view.getTag().toString()))).setSelected();
         songAdapter.notifyDataSetChanged();
     }
 
     public void genrePressed(View view) {
+        Log.d("Pressed: ", "genrePressed");
         genres.get(Integer.parseInt(view.getTag().toString())).setSelected();
 
         //   for(int i = 0; i < genres.size(); i++) {
@@ -405,6 +446,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
      */
     @Override
     public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
+        Log.d("Tabs: ", "Tab selected");
         // When the given tab is selected, switch to the corresponding page in
         // the ViewPager.
         mViewPager.setCurrentItem(tab.getPosition());
@@ -430,6 +472,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 
         @Override
         public Fragment getItem(int position) {
+            Log.d("Layout: ", "Getting fragments");
 
             Fragment fragment = null;
 

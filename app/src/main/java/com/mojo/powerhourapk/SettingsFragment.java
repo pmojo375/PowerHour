@@ -3,6 +3,7 @@ package com.mojo.powerhourapk;
 
 import android.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,6 +45,8 @@ public class SettingsFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_settings, container, false);
 
+        Log.d("SettingsFragment: ", "Creating SettingsFragment view");
+
         MainActivity.one_ounce_button = (ToggleButton) rootView.findViewById(R.id.one_ounce_shot);
         MainActivity.toggle_pause_button = (ToggleButton) rootView.findViewById(R.id.pause_enabled);
         MainActivity.challenges_button = (ToggleButton) rootView.findViewById(R.id.challenges_enabled);
@@ -73,6 +76,7 @@ public class SettingsFragment extends Fragment {
         MainActivity.duration_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent, View view,
                                        int position, long id) {
+                Log.d("SettingsFragment: ", "Duration spinner item selected. Position: " + position);
                 switch (position) {
                     case 0:
                         MainActivity.settings.setDuration(30);
@@ -91,6 +95,7 @@ public class SettingsFragment extends Fragment {
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
+                Log.d("SettingsFragment: ", "No Duration selected... Defaulting to '60 MIN'");
                 MainActivity.settings.setDuration(60);
             }
         });
@@ -101,6 +106,7 @@ public class SettingsFragment extends Fragment {
         MainActivity.challenge_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent, View view,
                                        int position, long id) {
+                Log.d("SettingsFragment: ", "Challenge Frequency spinner item selected. Position: " + position);
                 switch (position) {
                     case 0:
                         MainActivity.settings.setChallengeFrequency(5);
@@ -122,6 +128,7 @@ public class SettingsFragment extends Fragment {
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
+                Log.d("SettingsFragment: ", "No Challenge Frequency selected... Defaulting to '5 MIN'");
                 MainActivity.settings.setChallengeFrequency(5);
             }
         });
