@@ -3,6 +3,7 @@ package com.mojo.powerhourapk;
 
 import android.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +33,7 @@ public class PlayFragment extends Fragment {
      * number.
      */
     public static PlayFragment newInstance(int sectionNumber) {
+        Log.d("Play: ", "New instance of PlayFragment");
         PlayFragment fragment = new PlayFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_SECTION_NUMBER, sectionNumber);
@@ -43,6 +45,7 @@ public class PlayFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_play, container, false);
+        Log.d("Play: ", "Creating PlayFragment view");
 
         MainActivity.gametimer.setTextViews(
                 (TextView) rootView.findViewById(R.id.timer),
@@ -54,15 +57,23 @@ public class PlayFragment extends Fragment {
         MainActivity.challenge_timer_text = (TextView) rootView.findViewById(R.id.chal_timer);
         MainActivity.pause_button = (Button) rootView.findViewById(R.id.pause_button);
         MainActivity.play_button = (Button) rootView.findViewById(R.id.play_button);
-
-
         MainActivity.song_title_text = (TextView) rootView.findViewById(R.id.song_title);
         MainActivity.song_artist_text = (TextView) rootView.findViewById(R.id.song_artist);
-
         MainActivity.pause_button.setEnabled(false);
+
+        if (MainActivity.gameRunning) {
+            Log.d("Play: ", "Game running... setting UI elements");
+            if (MainActivity.gametimer.isChallengeActive()) {
+                MainActivity.challenge_text.setText(MainActivity.gametimer.getCurrentChallenge().getChallengeText());
+            }
+            MainActivity.song_artist_text.setText(MainActivity.currentSong.getArtist());
+            MainActivity.song_title_text.setText(MainActivity.currentSong.getTitle());
+            MainActivity.gametimer.updateUI(MainActivity.gametimer.beers, MainActivity.gametimer.ounces, MainActivity.gametimer.shots);
+        }
 
         // prevents buttons from being enabled when fragment is created mid game after swipes
         if (MainActivity.gameRunning) {
+            Log.d("Play: ", "Game running... setting button states");
             MainActivity.play_button.setEnabled(false);
             if (MainActivity.settings.isPauseEnabled()) {
                 MainActivity.pause_button.setEnabled(true);

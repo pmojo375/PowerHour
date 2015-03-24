@@ -30,7 +30,7 @@ public class MusicScanner {
     private static int count;
 
     public static ArrayList getMusicFromStorage(Context context) {
-
+        Log.d("MusicScanner: ", "Getting music from storage...");
         ArrayList<Song> songs = new ArrayList<>();
         String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
 
@@ -81,7 +81,7 @@ public class MusicScanner {
         mediaCursor.close();
         genresCursor.close();
 
-        Log.e("Audio Scanner", "Songs: " + count);
+        Log.e("MusicScanner", "Success. Songs: " + count);
 
         return songs;
     }

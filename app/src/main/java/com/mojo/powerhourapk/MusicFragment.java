@@ -2,6 +2,7 @@ package com.mojo.powerhourapk;
 
 import android.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,7 +36,7 @@ public class MusicFragment extends Fragment {
     }
 
     public static GenreAdapter createGenreSpinner() {
-
+        Log.d("MusicFragment: ", "genreAdapter being created...");
         MainActivity.genres = new ArrayList<>();
 
         for (int i = 0; i < songs.size(); i++) {
@@ -53,6 +54,7 @@ public class MusicFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.d("MusicFragment: ", "Creating MusicFragment view");
         View rootView = inflater.inflate(R.layout.fragment_music, container, false);
 
         ListView song_lv = (ListView) rootView.findViewById(R.id.music_list);

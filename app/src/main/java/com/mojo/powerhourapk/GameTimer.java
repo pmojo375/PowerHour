@@ -2,6 +2,7 @@ package com.mojo.powerhourapk;
 
 import android.app.Activity;
 import android.media.MediaPlayer;
+import android.util.Log;
 import android.widget.TextView;
 
 import java.util.Timer;
@@ -23,18 +24,23 @@ public class GameTimer {
     // challenge variables
     private int chal_min = 0;
     private int chal_sec = 60;
+    private int chal_count5 = 0;
     private int chal_count = 0;
+    private int chal_count10 = 0;
+    private int chal_count15 = 0;
+    private int chal_count20 = 0;
     private Challenge currentChallenge;
     // game variables
-    private int shots = 0;
-    private double ounces = 0;
-    private int beers = 0;
+    public int shots = 0;
+    public double ounces = 0;
+    public int beers = 0;
     private TextView time_text;
     private TextView beers_text;
     private TextView ounces_text;
     private TextView shots_text;
     private MediaPlayer songChange = new MediaPlayer();
     private boolean ongoingChallenge = true;
+    private boolean challengeActive = false;
 
     public GameTimer(Activity activity) {
         this.activity = activity;
@@ -52,6 +58,7 @@ public class GameTimer {
 
     // starts the timer which runs the core app functions
     void startTimer() {
+        Log.d("Timer: ", "Timer started...");
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
@@ -83,7 +90,8 @@ public class GameTimer {
     }
 
     private String formatTime() {
-        if (sec == 60 + (min * 60)) {
+        if (sec > 59 + (min * 60)) {
+            Log.d("Timer: ", "Minute change code running. Time:" + min + ":" + sec);
             min += 1;
             MainActivity.notification.createNotification();
             //  MainActivity.wakeScreen();
@@ -100,34 +108,76 @@ public class GameTimer {
 
             // the challenge code fun at every min change
             if (MainActivity.settings.isChallengesEnabled()) {
+                Log.d("Timer: ", "Challenges are enabled...");
+
+                // set the universal challenge count to be the correct one
+                switch (MainActivity.settings.getChallengeFrequency()) {
+                    case 5:
+                        chal_count = chal_count5;
+                        break;
+                    case 10:
+                        chal_count = chal_count10;
+                        break;
+                    case 15:
+                        chal_count = chal_count15;
+                        break;
+                    case 20:
+                        chal_count = chal_count20;
+                        break;
+                    default:
+                        chal_count = chal_count5;
+                        break;
+                }
+
+
                 // checks if it is time for a new challenge
-                if (min - (chal_count * MainActivity.settings.getChallengeFrequency()) ==  MainActivity.settings.getChallengeFrequency()) {
+                if (min == chal_count * MainActivity.settings.getChallengeFrequency() + MainActivity.settings.getChallengeFrequency()) {
+                    Log.d("Timer: ", "New challenged being created...");
                     MainActivity.setChallenge();
+                    challengeActive = true;
 
                     ongoingChallenge = true; // boolean to show current challenge is being displayed
-                    if(currentChallenge.isTimed()) {
+                    if (currentChallenge.isTimed()) {
+                        Log.d("Timer: ", "New challenge is a timed challenge");
                         chal_min = 4;
                     } else {
+                        Log.d("Timer: ", "New challenge is NOT a timed challenge");
                         chal_min = 1;
                         MainActivity.challenge_timer_text.setText("");
                     }
-
-                    chal_count++;
                 }
-
+            }
+            if (challengeActive) {
+                Log.d("Timer: ", "There is an active challenge");
                 // checks if the timer is not empty at min change
                 if (chal_min > 0) { // if the min is not yet 0
+                    Log.d("Timer: ", "Challenge minute reduced but not over");
                     chal_min -= 1;
                 } else { // if the challenge is over at this min change
+                    Log.d("Timer: ", "Challenge minute reduced and challenge is over");
                     ongoingChallenge = false;
                     chal_min -= 1;
                 }
             }
         }
 
+        // updates the challenge counts for all the possible frequencies
+        if (chal_count5 * 5 + MainActivity.settings.getChallengeFrequency() == min) {
+            chal_count5++;
+        }
+        if (chal_count10 * 10 + MainActivity.settings.getChallengeFrequency() == min) {
+            chal_count10++;
+        }
+        if (chal_count15 * 15 + MainActivity.settings.getChallengeFrequency() == min) {
+            chal_count15++;
+        }
+        if (chal_count20 * 20 + MainActivity.settings.getChallengeFrequency() == min) {
+            chal_count20++;
+        }
+
 
         // done every sec if the challenge is timed
-        if (MainActivity.settings.isChallengesEnabled()) {
+        if (challengeActive) {
 
             chal_sec -= 1;
 
@@ -143,10 +193,13 @@ public class GameTimer {
                 MainActivity.challenge_timer_text.setText(chal_min + ":" + String.format("%02d", chal_sec) + " left in challenge");
             } else {
                 challengeDone();
+                challengeActive = false;
             }
         } else {
-                if(chal_sec == 60 && chal_min == -1) {
+                if (chal_sec == 60 && chal_min == -1) {
+                    Log.d("Timer: ", "Challenge sec is 60 and the min is -1 indicating it is over");
                     challengeDone();
+                    challengeActive = false;
                 }
             }
         }
@@ -159,6 +212,7 @@ public class GameTimer {
     }
 
     private void challengeDone() {
+        Log.d("Timer: ", "Challenge information cleared");
         MainActivity.challenge_timer_text.setText("");
         MainActivity.challenge_text.setText("");
     }
@@ -169,9 +223,6 @@ public class GameTimer {
         beers_text.setText(Integer.toString(b));
         ounces_text.setText(Double.toString(o));
         shots_text.setText(Integer.toString(s));
-
-        MainActivity.song_artist_text.setText(MainActivity.currentSong.getArtist());
-        MainActivity.song_title_text.setText(MainActivity.currentSong.getTitle());
     }
 
     public void setTimer() {
@@ -196,6 +247,10 @@ public class GameTimer {
 
     public void setCurrentChallenge(Challenge currentChallenge) {
         this.currentChallenge = currentChallenge;
+    }
+
+    public boolean isChallengeActive() {
+        return challengeActive;
     }
 }
 
