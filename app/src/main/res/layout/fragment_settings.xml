@@ -2,7 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="#ff18453b">
 
     <RelativeLayout
         android:layout_width="fill_parent"
@@ -15,7 +16,10 @@
             android:layout_height="wrap_content"
             android:text="@string/settings_text2"
             android:layout_centerVertical="true"
-            android:paddingStart="5dp" />
+            android:paddingStart="5dp"
+            android:textColor="#ffffffff"
+            android:textColorHint="#ffffffff"
+            android:textSize="18sp" />
 
         <ToggleButton
             android:id="@+id/pause_enabled"
@@ -40,7 +44,10 @@
             android:text="@string/settings_text3"
             android:id="@+id/textView2"
             android:paddingStart="5dp"
-            android:layout_centerVertical="true" />
+            android:layout_centerVertical="true"
+            android:textColorHint="#ffffffff"
+            android:textColor="#ffffffff"
+            android:textSize="18sp" />
 
         <Spinner
             android:id="@+id/game_duration"
@@ -53,8 +60,8 @@
             android:entries="@array/duration_array"
             android:prompt="@string/duration_prompt"
             android:gravity="center_vertical"
-            android:layout_alignBottom="@+id/textView2"
-            android:layout_alignTop="@+id/textView2" />
+            android:layout_alignTop="@+id/textView2"
+            android:layout_alignBottom="@+id/textView2" />
 
     </RelativeLayout>
 
@@ -69,7 +76,10 @@
             android:layout_height="wrap_content"
             android:text="@string/settings_text4"
             android:paddingStart="5dp"
-            android:layout_centerVertical="true" />
+            android:layout_centerVertical="true"
+            android:textColor="#ffffffff"
+            android:textColorHint="#ffffffff"
+            android:textSize="18sp" />
 
         <ToggleButton
             android:id="@+id/challenges_enabled"
@@ -93,7 +103,10 @@
             android:text="@string/settings_text5"
             android:id="@+id/textView"
             android:paddingStart="5dp"
-            android:layout_centerVertical="true" />
+            android:layout_centerVertical="true"
+            android:textColorHint="#ffffffff"
+            android:textColor="#ffffffff"
+            android:textSize="18sp" />
 
         <Spinner
             android:id="@+id/challenge_frequency"
@@ -120,7 +133,10 @@
             android:layout_height="wrap_content"
             android:text="@string/settings_text6"
             android:paddingStart="5dp"
-            android:layout_centerVertical="true" />
+            android:layout_centerVertical="true"
+            android:textColor="#ffffffff"
+            android:textColorHint="#ffffffff"
+            android:textSize="18sp" />
 
         <ToggleButton
             android:id="@+id/song_change_sound_enabled"
@@ -153,7 +169,10 @@
             android:layout_height="wrap_content"
             android:text="@string/settings_text7"
             android:paddingStart="5dp"
-            android:layout_centerVertical="true" />
+            android:layout_centerVertical="true"
+            android:textColorHint="#ffffffff"
+            android:textColor="#ffffffff"
+            android:textSize="18sp" />
 
         <ToggleButton
             android:id="@+id/beer_empty_sound_enabled"
@@ -187,7 +206,10 @@
             android:text="@string/settings_text1"
             android:layout_alignParentRight="false"
             android:paddingStart="5dp"
-            android:layout_centerVertical="true" />
+            android:layout_centerVertical="true"
+            android:textColorHint="#ffffffff"
+            android:textColor="#ffffffff"
+            android:textSize="18sp" />
 
         <ToggleButton
             android:onClick="toggleOneOunce"

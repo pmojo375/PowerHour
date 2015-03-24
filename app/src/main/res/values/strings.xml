@@ -24,8 +24,8 @@
     <string name="settings_text3">Duration in Minutes</string>
     <string name="settings_text4">Enable Challenges</string>
     <string name="settings_text5">Challenge Frequency</string>
-    <string name="settings_text6">Enable Song Change Sound</string>
-    <string name="settings_text7">Enable Beer Gone Sound</string>
+    <string name="settings_text6">Song Change Sound</string>
+    <string name="settings_text7">Beer Gone Sound</string>
     <string name="settings_text8">Random Songs (From SD Card)</string>
     <string name="genre_button">Filter by Genre</string>
 

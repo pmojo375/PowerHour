@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.ToggleButton;
 
@@ -60,11 +61,14 @@ public class SettingsFragment extends Fragment {
         // TODO: change the spinner position to the correct spot
         MainActivity.toggle_pause_button.setChecked(MainActivity.settings.isPauseEnabled());
 
-        if(MainActivity.settings.getShotSize() == 1) {
+        if (MainActivity.settings.getShotSize() == 1) {
             MainActivity.one_ounce_button.setChecked(true);
         } else {
             MainActivity.one_ounce_button.setChecked(false);
         }
+
+        ArrayAdapter adapter_duration = ArrayAdapter.createFromResource(MainActivity.context, R.array.duration_array, R.layout.duration_spinner);
+        MainActivity.duration_spinner.setAdapter(adapter_duration);
 
         MainActivity.duration_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent, View view,
@@ -90,6 +94,9 @@ public class SettingsFragment extends Fragment {
                 MainActivity.settings.setDuration(60);
             }
         });
+
+        ArrayAdapter adapter_challenge = ArrayAdapter.createFromResource(MainActivity.context, R.array.challenge_frequency_array, R.layout.duration_spinner);
+        MainActivity.challenge_spinner.setAdapter(adapter_challenge);
 
         MainActivity.challenge_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent, View view,

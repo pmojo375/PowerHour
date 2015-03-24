@@ -169,6 +169,9 @@ public class GameTimer {
         beers_text.setText(Integer.toString(b));
         ounces_text.setText(Double.toString(o));
         shots_text.setText(Integer.toString(s));
+
+        MainActivity.song_artist_text.setText(MainActivity.currentSong.getArtist());
+        MainActivity.song_title_text.setText(MainActivity.currentSong.getTitle());
     }
 
     public void setTimer() {

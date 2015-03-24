@@ -61,6 +61,18 @@ public class PlayFragment extends Fragment {
 
         MainActivity.pause_button.setEnabled(false);
 
+        // prevents buttons from being enabled when fragment is created mid game after swipes
+        if (MainActivity.gameRunning) {
+            MainActivity.play_button.setEnabled(false);
+            if (MainActivity.settings.isPauseEnabled()) {
+                MainActivity.pause_button.setEnabled(true);
+                //MainActivity.pause_button.setText(); WANT TO SET THE TEXT TO MATCH IF PAUSED OR NOT
+            } else {
+                MainActivity.pause_button.setEnabled(false);
+            }
+        } else {
+            MainActivity.play_button.setEnabled(true);
+        }
 
         return rootView;
     }

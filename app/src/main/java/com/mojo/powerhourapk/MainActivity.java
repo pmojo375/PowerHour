@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Locale;
+import java.util.Random;
 
 // TODO: add custom icon for app
 // TODO: further optimize code to match standards
@@ -48,6 +49,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
     private static SongAdapter songAdapter;
     public static String burp = "R.raw.burp.mp3";
     public static String can_opening = "R.raw.can_opening.mp3";
+    public static Song currentSong;
 
     // buttons and spinners
     public static Button pause_button;
@@ -70,10 +72,18 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 
     public static PowerManager pm;
     public static PowerManager.WakeLock wl;
+    public static boolean gameRunning = false;
+    private static final Random randomGenerator = new Random();
 
     public static void setChallenge() {
         gametimer.setCurrentChallenge(challenges.getRandomChallenge());
         challenge_text.setText(gametimer.getCurrentChallenge().getChallengeText());
+    }
+
+    // gets a random song
+    public static Song getRandomSong() {
+        int index = randomGenerator.nextInt(MusicFragment.songs.size());
+        return MusicFragment.songs.get(index);
     }
 
     public static void playSong() {
@@ -84,18 +94,15 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
                 mp.reset();
             }
 
-            Collections.shuffle(MusicFragment.songs);
+            currentSong = getRandomSong();
 
-            if (MusicFragment.songs.get(0).isSelected() && !MusicFragment.songs.get(0).isPreviouslyPlayed()) {
-                MusicFragment.songs.get(0).setPreviouslyPlayed(true);
-                mp.setDataSource(MusicFragment.songs.get(0).getLocation());
+            if (currentSong.isSelected() && !currentSong.isPreviouslyPlayed()) { // if no more playable songs it will crash!
+                currentSong.setPreviouslyPlayed(true);
+                mp.setDataSource(currentSong.getLocation());
                 mp.prepare();
                 mp.start();
 
-                song_artist_text.setText(MusicFragment.songs.get(0).getArtist());
-                song_title_text.setText(MusicFragment.songs.get(0).getTitle());
-
-                notification.mBuilder.setContentText(MusicFragment.songs.get(0).getArtist() + " - " + MusicFragment.songs.get(0).getTitle());
+                notification.mBuilder.setContentText(currentSong.getArtist() + " - " + currentSong.getTitle());
 
 
             } else {
@@ -107,6 +114,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
         }
     }
 
+    // TODO: fix bug where song list is rearranged and rechecked
     public static void setSongAdapter(SongAdapter adapter) {
         songAdapter = adapter;
     }
@@ -331,6 +339,8 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
     }
 
     public void playButton(View view) {
+
+        gameRunning = true;
 
         //if(MusicFragment.song_lv.getCount() > 60) {
         notification.createNotification();
