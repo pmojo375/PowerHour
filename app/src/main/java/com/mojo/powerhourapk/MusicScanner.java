@@ -15,6 +15,7 @@ import java.util.ArrayList;
  */
 public class MusicScanner {
 
+    private static final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final String[] mediaProjection = {
             MediaStore.Audio.Media._ID,
             MediaStore.Audio.Media.ARTIST,
@@ -30,7 +31,7 @@ public class MusicScanner {
     private static int count;
 
     public static ArrayList getMusicFromStorage(Context context) {
-        Log.d("MusicScanner: ", "Getting music from storage...");
+        Log.d(LOG_TAG, "Getting music from storage...");
         ArrayList<Song> songs = new ArrayList<>();
         String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
 
@@ -76,13 +77,15 @@ public class MusicScanner {
                     count++;
                 }
             } while (mediaCursor.moveToNext());
-        }
 
-        mediaCursor.close();
-        genresCursor.close();
+            mediaCursor.close();
+            genresCursor.close();
+        }
 
         Log.e("MusicScanner", "Success. Songs: " + count);
 
         return songs;
     }
 }
+
+

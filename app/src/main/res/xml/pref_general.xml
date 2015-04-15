@@ -1,0 +1,46 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="one_ounce_key"
+        android:summaryOff="@string/pref_one_ounce_summaryOff"
+        android:summaryOn="@string/pref_one_ounce_summaryOn"
+        android:title="@string/pref_one_ounce_title" />
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="pause_key"
+        android:summaryOff="@string/pref_pause_summaryOff"
+        android:summaryOn="@string/pref_pause_summaryOn"
+        android:title="@string/pref_pause_title" />
+
+    <ListPreference
+        android:defaultValue="@string/pref_song_change_default"
+        android:entries="@array/pref_song_change_entries"
+        android:entryValues="@array/pref_song_change_values"
+        android:key="song_sound_key"
+        android:title="@string/pref_song_change_title" />
+
+
+    <ListPreference
+        android:defaultValue="@string/pref_beer_finished_default"
+        android:entries="@array/pref_beer_finished_entries"
+        android:entryValues="@array/pref_beer_finished_values"
+        android:key="beer_finished_key"
+        android:title="@string/pref_beer_finished_title" />
+
+    <ListPreference
+        android:defaultValue="@string/pref_duration_default"
+        android:entries="@array/pref_duration_entries"
+        android:entryValues="@array/pref_duration_values"
+        android:key="duration_key"
+        android:title="@string/pref_duration_title" />
+
+    <ListPreference
+        android:defaultValue="@string/pref_song_change_default"
+        android:entries="@array/pref_challenge_frequency_entries"
+        android:entryValues="@array/pref_challenge_frequency_values"
+        android:key="challenge_frequency_key"
+        android:title="@string/pref_challenge_frequency_title" />
+
+</PreferenceScreen>

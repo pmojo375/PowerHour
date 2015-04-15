@@ -1,4 +1,4 @@
-package com.mojo.powerhourapk;
+package com.mojo.powerhourapk.Objects;
 
 import java.util.ArrayList;
 

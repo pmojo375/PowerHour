@@ -1,341 +1,208 @@
 package com.mojo.powerhourapk;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
-import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.os.PowerManager;
-import android.support.v13.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
+import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.ListView;
-import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.ToggleButton;
 
-import java.io.IOException;
+import com.mojo.powerhourapk.Objects.Challenge;
+import com.mojo.powerhourapk.Objects.Genre;
+
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Locale;
-import java.util.Random;
 
 // TODO: add custom icon for app
 // TODO: further optimize code to match standards
 
-public class MainActivity extends Activity implements ActionBar.TabListener {
+public class MainActivity extends Activity {
 
     // media variables
-    private static final MediaPlayer mp = new MediaPlayer();
-    private static final Challenges challenges = new Challenges();
-    private static final String POWERHOUR = "powerhour";
-    public static GameTimer gametimer;
-    public static Settings settings;
     public static Notification notification;
+    public static TimedFunctions timers;
     public static Context context;
     public static ContentResolver musicResolver;
-    private static SongAdapter songAdapter;
+    public static SongAdapter songAdapter;
     public static String burp = "R.raw.burp.mp3";
     public static String can_opening = "R.raw.can_opening.mp3";
-    public static Song currentSong;
-
-    // buttons and spinners
     public static Button pause_button;
     public static Button play_button;
-    public static ToggleButton one_ounce_button;
-    public static ToggleButton toggle_pause_button;
-    public static ToggleButton challenges_button;
-    public static Spinner duration_spinner;
-    public static Spinner challenge_spinner;
-    public static ToggleButton change_sound_button;
-    public static ToggleButton beer_sound_button;
-    public static TextView song_title_text;
-    public static TextView song_artist_text;
     public static ArrayList<Genre> genres;
     public static GenreAdapter genreAdapter;
-    public static TextView challenge_text;
-    public static TextView challenge_timer_text;
-    private static ViewPager mViewPager;
-    private static boolean paused = false;
-
-    public static PowerManager pm;
-    public static PowerManager.WakeLock wl;
     public static boolean gameRunning = false;
-    private static final Random randomGenerator = new Random();
+    public static ArrayList<Song> songs;
+    private static TextView timer;
+    private static TextView challengeTimer;
+    private static TextView challengeText;
+    private static TextView shotsText;
+    private static TextView beersText;
+    private static TextView ouncesText;
+    private static TextView songTitle;
+    private static TextView songArtist;
+    private static int shots = 0;
+    private static int beers = 0;
+    private static SharedPreferences preferences;
+    private static double ounces = 0;
+    private final String LOG_TAG = MainActivity.class.getSimpleName();
+    private boolean isPaused;
 
-    public static void setChallenge() {
-        Log.d("Challenge: ", "Challenge set in GameTimer class");
-        gametimer.setCurrentChallenge(challenges.getRandomChallenge());
-        challenge_text.setText(gametimer.getCurrentChallenge().getChallengeText());
+    public static void updateSongText(String title, String artist) {
+        songTitle.setText(title);
+        songArtist.setText(artist);
     }
 
-    // gets a random song
-    public static Song getRandomSong() {
-        Log.d("Media: ", "Getting random song");
-        int index = randomGenerator.nextInt(MusicFragment.songs.size());
-        return MusicFragment.songs.get(index);
+    public static void updateMainTimer(int gameMinutes, int formattedSeconds) {
+        timer.setText(gameMinutes + ":" + String.format("%02d", formattedSeconds));
     }
 
-    public static void playSong() {
-        // plays random song
-        try {
-            if (mp.isPlaying()) {
-                mp.stop();
-                mp.reset();
-            }
+    public static void updateChallengeTimer(int challengeMinutes, int formattedChallengeSeconds) {
+        challengeTimer.setText(challengeMinutes + ":" + String.format("%02d", formattedChallengeSeconds));
+    }
 
-            currentSong = getRandomSong();
+    public static void updateChallengeText(Challenge challenge) {
+        challengeText.setText(challenge.getChallengeText());
+    }
 
-            if (currentSong.isSelected() && !currentSong.isPreviouslyPlayed()) { // if no more playable songs it will crash!
-                Log.d("Media: ", "Song okay to play");
-                currentSong.setPreviouslyPlayed(true);
-                mp.setDataSource(currentSong.getLocation());
-                mp.prepare();
-                mp.start();
+    public static void updateInformation() {
+        shots++;
+        double shotSize = 1.5;
 
-                notification.mBuilder.setContentText(currentSong.getArtist() + " - " + currentSong.getTitle());
-
-                song_artist_text.setText(currentSong.getArtist());
-                song_title_text.setText(currentSong.getTitle());
-
-            } else {
-                Log.d("Media: ", "Song not playable... checking if there are playable songs remaining");
-                int count = 0;
-                for (int i = 0; i < MusicFragment.songs.size(); i++) {
-                    if (!MusicFragment.songs.get(i).isSelected() ||
-                            MusicFragment.songs.get(i).isPreviouslyPlayed()) {
-                        count++;
-                    }
-                }
-
-                if (MusicFragment.songs.size() == count) {
-                    Log.d("Media: ", "No playable songs... Attempting to reset previouslyPlayed tag on all songs");
-                    for (int i = 0; i < MusicFragment.songs.size(); i++) {
-                        MusicFragment.songs.get(i).setPreviouslyPlayed(false);
-                    }
-                    AlertDialog alertDialog = new AlertDialog.Builder(context).create();
-                    alertDialog.setTitle("Alert");
-                    alertDialog.setMessage("No remaining playable songs! Songs will now play multiple times.");
-                    alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                }
-                            });
-                    alertDialog.show();
-                }
-                playSong();
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (preferences.getBoolean("one_ounce_key", false)) {
+            shotSize = 1;
         }
-    }
 
-    // TODO: fix bug where song list is rearranged and rechecked
-    public static void setSongAdapter(SongAdapter adapter) {
-        Log.d("Android: ", "songAdapter set on MainActivity");
-        songAdapter = adapter;
-    }
-
-    // needs work
-    public static void wakeScreen() {
-        pm = (PowerManager) MainActivity.context.getSystemService(POWER_SERVICE);
-        wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK, "FlashActivity");
-        wl.acquire();
-    }
-
-    /*
-     *  Creates the genre dialog
-     */
-    public void genreButton(View view) {
-        Log.d("Button: ", "genreButton");
-        Dialog genreDialog = new Dialog(MainActivity.context);
-        LayoutInflater li = (LayoutInflater) MainActivity.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        final View genre_view = li.inflate(R.layout.genreselctor, null, false);
-        final ListView list = (ListView) genre_view.findViewById(R.id.genre_list);
-
-        WindowManager.LayoutParams params = new WindowManager.LayoutParams();
-        params.copyFrom(genreDialog.getWindow().getAttributes());
-        params.width = WindowManager.LayoutParams.MATCH_PARENT;
-        params.height = WindowManager.LayoutParams.MATCH_PARENT;
-        genreDialog.getWindow().setAttributes(params);
-
-        list.setAdapter(genreAdapter);
-
-        genreDialog.setTitle("Select Genres to Include");
-        genreDialog.setContentView(genre_view);
-        genreDialog.show();
-    }
-
-    /*
-     *  Settings onClick methods
-     */
-    public void toggleOneOunce(View view) {
-        Log.d("Toggle: ", "toggleOneOunce");
-        if (one_ounce_button.isChecked()) {
-            settings.setShotSize(1);
+        if ((shots - (beers * (12 / shotSize))) * shotSize >= 12) {
+            ounces = 0;
+            beers++;
+            // add beer sound
         } else {
-            settings.setShotSize(1.5);
+            ounces = ounces + shotSize;
         }
+
+        shotsText.setText(Integer.toString(shots));
+        ouncesText.setText(Double.toString(ounces));
+        beersText.setText(Integer.toString(beers));
     }
 
-    public void toggleChallenges(View view) {
-        Log.d("Toggle: ", "toggleChallenges");
-        settings.setChallengesEnabled(challenges_button.isChecked());
-        challenge_spinner.setEnabled(challenges_button.isChecked());
+    public static void clearChallenge() {
+        challengeTimer.setText("");
+        challengeText.setText("");
     }
 
-    public void togglePause(View view) {
-        Log.d("Toggle: ", "togglePause");
-        settings.setPauseEnabled(toggle_pause_button.isChecked());
-    }
-
-    public void changeSoundToggle(View view) {
-        Log.d("Toggle: ", "changeSoundToggle");
-        settings.setSongChange(change_sound_button.isChecked());
-    }
-
-    public void beerSoundToggle(View view) {
-        Log.d("Toggle: ", "beerSoundToggle");
-        settings.setBeerGone(beer_sound_button.isChecked());
-    }
-
-    /*
-     *  Lifecycle Methods
-     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        String msg = "Android: ";
-        Log.d(msg, "created");
+        Log.v(LOG_TAG, "Created");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
+
+        shotsText = (TextView) findViewById(R.id.shots);
+        ouncesText = (TextView) findViewById(R.id.ounces);
+        beersText = (TextView) findViewById(R.id.beers);
+        challengeText = (TextView) findViewById(R.id.challenge);
+        challengeTimer = (TextView) findViewById(R.id.chal_timer);
+        MainActivity.pause_button = (Button) findViewById(R.id.pause_button);
+        MainActivity.play_button = (Button) findViewById(R.id.play_button);
+        songTitle = (TextView) findViewById(R.id.song_title);
+        songArtist = (TextView) findViewById(R.id.song_artist);
+        timer = (TextView) findViewById(R.id.timer);
+        MainActivity.pause_button.setEnabled(false);
+
+        // TODO: Reload all UI elements
 
         context = this;
         musicResolver = getContentResolver();
 
-        gametimer = new GameTimer(this);
-        settings = new Settings(this);
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
         notification = new Notification(this);
 
+        // Set up the action bar
+        assert getActionBar() != null;
 
-        // Set up the action bar.
-        final ActionBar actionBar = getActionBar();
-        assert actionBar != null;
-        //actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
+        // gets the master list of songs from the device
+        songs = MusicScanner.getMusicFromStorage(this);
 
-        SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getFragmentManager());
-        actionBar.hide();
+        // create the custom song and genre adapters
+        songAdapter = new SongAdapter(this, songs);
+        genreAdapter = new GenreAdapter(this, songs);
+    }
 
-        // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager) findViewById(R.id.pager);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu items for use in the action bar
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
 
-        /*
-        // When swiping between different sections, select the corresponding
-        // tab. We can also use ActionBar.Tab#select() to do this if we have
-        // a reference to the Tab.
-        mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-            @Override
-            public void onPageSelected(int position) {
-                actionBar.setSelectedNavigationItem(position);
-            }
-        });
-
-        // For each of the sections in the app, add a tab to the action bar.
-        for (int i = 0; i < mSectionsPagerAdapter.getCount(); i++) {
-            // Create a tab with text corresponding to the page title defined by
-            // the adapter. Also specify this Activity object, which implements
-            // the TabListener interface, as the callback (listener) for when
-            // this tab is selected.
-            actionBar.addTab(
-                    actionBar.newTab()
-                            .setText(mSectionsPagerAdapter.getPageTitle(i))
-                            .setTabListener(this));
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle presses on the action bar items
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                startActivity(new Intent(this, SettingsActivity.class));
+                return true;
+            case R.id.action_music:
+                startActivity(new Intent(this, MusicActivity.class));
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-        */
-
     }
 
     @Override
     public void onRestart() {
-        String msg = "Android: ";
-        Log.e(msg, "Restarted");
+        Log.v(LOG_TAG, "Restarted");
         super.onRestart();
     }
 
     @Override
     public void onResume() {
-        String msg = "Android: ";
-        Log.e(msg, "Resumed");
+        Log.v(LOG_TAG, "Resumed");
         super.onResume();
     }
 
     @Override
     public void onStop() {
-        String msg = "Android: ";
-        Log.e(msg, "Stopped");
-
-        SharedPreferences.Editor editor = getSharedPreferences(POWERHOUR, MODE_PRIVATE).edit();
-        editor.putBoolean("challengesEnabled", settings.isChallengesEnabled());
-        editor.putBoolean("pauseEnabled", settings.isPauseEnabled());
-        editor.putBoolean("songSoundEnabled", settings.isSongChange());
-        editor.putBoolean("beerGoneEnabled", settings.isBeerGone());
-        editor.putFloat("shotSize", (float) settings.getShotSize());
-        editor.putInt("duration", settings.getDuration());
-        editor.putInt("challengeFrequency", settings.getChallengeFrequency());
-        editor.commit();
+        Log.v(LOG_TAG, "Stopped");
         super.onStop();
     }
 
     @Override
     public void onStart() {
-        String msg = "Android: ";
-        Log.e(msg, "Started");
+        Log.v(LOG_TAG, "Started");
         super.onStart();
-
-        SharedPreferences prefs = getSharedPreferences(POWERHOUR, MODE_PRIVATE);
-        settings.setBeerGone(prefs.getBoolean("beerGoneEnabled", false));
-        settings.setSongChange(prefs.getBoolean("songSoundEnabled", true));
-        settings.setChallengeFrequency(prefs.getInt("challengeFrequency", 5));
-        settings.setDuration(prefs.getInt("duration", 60));
-        settings.setChallengesEnabled(prefs.getBoolean("challengesEnabled", false));
-        settings.setPauseEnabled(prefs.getBoolean("pauseEnabled", false));
-        settings.setShotSize((double) prefs.getFloat("shotSize", (float) 1.5));
     }
 
     @Override
     public void onPause() {
-        String msg = "Android: ";
-        Log.e(msg, "Paused");
+        Log.v(LOG_TAG, "Paused");
         super.onPause();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mp.stop();
-        // wl.release();
-        gametimer.cancelTimer();
-        if (notification != null) {
+        //mp.stop();
+
+        // stop the service
+
+        if (notification.mNotificationManager != null) {
             notification.mNotificationManager.cancel(notification.mId);
         }
-        String msg = "Android: ";
-        Log.d(msg, "Destroyed");
+
+        Log.v(LOG_TAG, "Destroyed");
     }
 
     @Override
@@ -355,163 +222,36 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
                 .show();
     }
 
-    /*
-     *  Button Methods
-     */
     public void pauseButton(View view) {
         Log.d("Button: ", "pauseButton");
-        if (paused) {
-            paused = false;
-            gametimer.setTimer();
-            gametimer.startTimer();
-            mp.start();
-            pause_button.setActivated(false);
+        if (preferences.getBoolean("pause_key", true)) {
+            isPaused = false;
+            timers.resumeTimers();
             pause_button.setText(R.string.pause);
-            toggle_pause_button.setEnabled(true);
         } else {
-            paused = true;
-            toggle_pause_button.setEnabled(false);
-            gametimer.cancelTimer();
-            pause_button.setActivated(false);
+            isPaused = true;
+            timers.stopTimers();
             pause_button.setText(R.string.resume);
-            mp.pause();
         }
     }
 
     public void playButton(View view) {
-        Log.d("Button: ", "playButton");
         gameRunning = true;
 
-        // if(MusicFragment.songs.size() == 0) {
+        timers = new TimedFunctions(getApplicationContext());
 
-        //  }
-        notification.createNotification();
-        gametimer.startTimer();
+        timers.populateTimeLists();
+        timers.startGameTimers();
 
         // enable the pause button if toggled
-        if (settings.isPauseEnabled()) {
+        if (preferences.getBoolean("pause_key", true)) {
             pause_button.setEnabled(true);
         }
-
-        // to please the calls to the current challenge before one exists
-        Challenge nullChallenge = new Challenge(false, "");
-        gametimer.setCurrentChallenge(nullChallenge);
-
-        // TODO: code duration function (game end)
-
-        playSong();
 
         play_button.setEnabled(false);
     }
 
-
-    public void songPressed(View view) {
-        Log.d("Pressed: ", "songPressed");
-        (MusicFragment.songs.get(Integer.parseInt(view.getTag().toString()))).setSelected();
-        songAdapter.notifyDataSetChanged();
-    }
-
-    public void genrePressed(View view) {
-        Log.d("Pressed: ", "genrePressed");
-        genres.get(Integer.parseInt(view.getTag().toString())).setSelected();
-
-        //   for(int i = 0; i < genres.size(); i++) {
-        if (genres.get(Integer.parseInt(view.getTag().toString())).isSelected()) {
-
-            for (int j = 0; j < MusicFragment.songs.size(); j++) {
-                if (MusicFragment.songs.get(j).getGenre() != null && (MusicFragment.songs.get(j).getGenre()).equals(genres.get(Integer.parseInt(view.getTag().toString())).getGenre())) {
-                    if (!MusicFragment.songs.get(j).isSelected()) {
-                        MusicFragment.songs.get(j).setSelected();
-                    }
-                }
-            }
-            // }
-
-
-        } else {
-            for (int j = 0; j < MusicFragment.songs.size(); j++) {
-                if (MusicFragment.songs.get(j).getGenre() != null && (MusicFragment.songs.get(j).getGenre()).equals(genres.get(Integer.parseInt(view.getTag().toString())).getGenre())) {
-                    if (MusicFragment.songs.get(j).isSelected()) {
-                        MusicFragment.songs.get(j).setSelected();
-                    }
-                }
-            }
-        }
-        genreAdapter.notifyDataSetChanged();
-        songAdapter.notifyDataSetChanged();
-    }
-
-    /*
-     *  Tab Methods
-     */
-    @Override
-    public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
-        Log.d("Tabs: ", "Tab selected");
-        // When the given tab is selected, switch to the corresponding page in
-        // the ViewPager.
-        mViewPager.setCurrentItem(tab.getPosition());
-    }
-
-    @Override
-    public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
-    }
-
-    @Override
-    public void onTabReselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
-    }
-
-    /**
-     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
-     * one of the sections/tabs/pages.
-     */
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
-
-        public SectionsPagerAdapter(FragmentManager fm) {
-            super(fm);
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-            Log.d("Layout: ", "Getting fragments");
-
-            Fragment fragment = null;
-
-            switch (position) {
-                case 0:
-                    fragment = Fragment.instantiate(context, PlayFragment.class.getName());
-                    break;
-                case 1:
-                    fragment = Fragment.instantiate(context, MusicFragment.class.getName());
-                    break;
-                case 2:
-                    fragment = Fragment.instantiate(context, SettingsFragment.class.getName());
-                    break;
-            }
-
-            return fragment;
-
-        }
-
-        @Override
-        public int getCount() {
-            // Show 3 total pages.
-            return 3;
-        }
-
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            Locale l = Locale.getDefault();
-            switch (position) {
-                case 0:
-                    return getString(R.string.title_section3).toUpperCase(l);
-                case 1:
-                    return getString(R.string.title_section2).toUpperCase(l);
-                case 2:
-                    return getString(R.string.title_section1).toUpperCase(l);
-
-            }
-            return null;
-        }
+    public void setChallengeText(String text) {
+        challengeText.setText(text);
     }
 }

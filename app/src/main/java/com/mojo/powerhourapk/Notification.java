@@ -21,6 +21,16 @@ public class Notification {
         this.context = context;
     }
 
+    public void updateNotificationSong(String text) {
+        mBuilder.setContentText(text);
+        mNotificationManager.notify(mId, mBuilder.build());
+    }
+
+    public void updateNotificationTime(String text) {
+        mBuilder.setContentTitle(text);
+        mNotificationManager.notify(mId, mBuilder.build());
+    }
+
     // creates the ongoing notification
     void createNotification() {
         // needed for any notification
@@ -28,7 +38,7 @@ public class Notification {
         mBuilder =
                 new NotificationCompat.Builder(context)
                         .setSmallIcon(R.drawable.beer_glass)
-                        .setContentTitle("Powerhour - Time: " + Integer.toString(MainActivity.gametimer.getMin()) + ":" + String.format("%02d", MainActivity.gametimer.getSec() - (MainActivity.gametimer.getMin() * 60)))
+                        .setContentTitle("Powerhour - Time: ") //+ Integer.toString(MainActivity.gametimer.getMin()) + ":" + String.format("%02d", MainActivity.gametimer.getSec() - (MainActivity.gametimer.getMin() * 60)))
                         .setContentText("Press to see app...")
                         .setPriority(2);
 

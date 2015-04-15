@@ -9,6 +9,8 @@ import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.mojo.powerhourapk.Objects.Genre;
+
 import java.util.ArrayList;
 
 /**
@@ -16,12 +18,19 @@ import java.util.ArrayList;
  */
 public class GenreAdapter extends BaseAdapter {
 
-    private final ArrayList<Genre> genres;
     private final LayoutInflater genreInf;
+    private ArrayList<Genre> genres = new ArrayList<>();
 
-    public GenreAdapter(Context c, ArrayList<Genre> theGenres) {
-        genres = theGenres;
+    public GenreAdapter(Context c, ArrayList<Song> songs) {
         genreInf = LayoutInflater.from(c);
+
+        for (int i = 0; i < songs.size(); i++) {
+            if (!Genre.genres.contains(songs.get(i).getGenre())) {
+                if (songs.get(i).getGenre() != null) {
+                    genres.add(new Genre(songs.get(i).getGenre()));
+                }
+            }
+        }
     }
 
     @Override

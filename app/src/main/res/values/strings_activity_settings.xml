@@ -1,0 +1,84 @@
+<resources>
+
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Settings Entries -->
+    <string-array name="pref_duration_entries">
+        <item>30 Minutes</item>
+        <item>60 Minutes</item>
+        <item>90 Minutes</item>
+        <item>100 Minutes</item>
+    </string-array>
+
+    <string-array name="pref_challenge_frequency_entries">
+        <item>Every 5 Minutes</item>
+        <item>Every 10 Minutes</item>
+        <item>Every 15 Minutes</item>
+        <item>Every 20 Minutes</item>
+    </string-array>
+
+    <string-array name="pref_song_change_entries">
+        <item>Burp</item>
+        <item>Shots! Shots! Shots!</item>
+        <item>Ahhhhh...</item>
+        <item>Sound Disabled</item>
+    </string-array>
+
+    <string-array name="pref_beer_finished_entries">
+        <item>Cracking a Beer</item>
+        <item>Bottle Shattering</item>
+        <item>Crushing a Can</item>
+        <item>Sound Disabled</item>
+    </string-array>
+
+    <!-- Settings Entry Values -->
+    <string-array name="pref_duration_values">
+        <item>30</item>
+        <item>60</item>
+        <item>90</item>
+        <item>100</item>
+    </string-array>
+
+    <string-array name="pref_challenge_frequency_values">
+        <item>5</item>
+        <item>10</item>
+        <item>15</item>
+        <item>20</item>
+    </string-array>
+
+    <string-array name="pref_song_change_values">
+        <item>burp.mp3</item>
+        <item>shots.mp3</item>
+        <item>drinking.mp3</item>
+        <item>null</item>
+    </string-array>
+
+    <string-array name="pref_beer_finished_values">
+        <item>can_opening.mp3</item>
+        <item>bottle_shattering.mp3</item>
+        <item>can_crushing.mp3</item>
+        <item>null</item>
+    </string-array>
+
+    <!-- Settings Titles -->
+    <string name="pref_one_ounce_title">One Ounce Shots</string>
+    <string name="pref_pause_title">Enable Pause Function</string>
+    <string name="pref_duration_title">Duration in Minutes</string>
+    <string name="pref_challenges_title">Enable Challenges</string>
+    <string name="pref_challenge_frequency_title">Challenge Frequency</string>
+    <string name="pref_song_change_title">Song Change Sound</string>
+    <string name="pref_beer_finished_title">Beer Gone Sound</string>
+
+    <!-- Settings Defaults -->
+    <string name="pref_duration_default">60</string>
+    <string name="pref_challenge_frequency_default">5</string>
+    <string name="pref_song_change_default">burp.mp3</string>
+    <string name="pref_beer_finished_default">can_opening.mp3</string>
+
+    <!-- Settings Summary -->
+    <string name="pref_one_ounce_summaryOn">Using 1 ounce shot pours</string>
+    <string name="pref_one_ounce_summaryOff">Using standard 1.5 ounce shot pours</string>
+    <string name="pref_pause_summaryOn">Pause function is enabled</string>
+    <string name="pref_pause_summaryOff">Pause function is disabled</string>
+
+</resources>
