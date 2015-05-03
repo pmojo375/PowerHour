@@ -21,16 +21,9 @@ public class GenreAdapter extends BaseAdapter {
     private final LayoutInflater genreInf;
     private ArrayList<Genre> genres = new ArrayList<>();
 
-    public GenreAdapter(Context c, ArrayList<Song> songs) {
+    public GenreAdapter(Context c, ArrayList<Genre> genres) {
+        this.genres = genres;
         genreInf = LayoutInflater.from(c);
-
-        for (int i = 0; i < songs.size(); i++) {
-            if (!Genre.genres.contains(songs.get(i).getGenre())) {
-                if (songs.get(i).getGenre() != null) {
-                    genres.add(new Genre(songs.get(i).getGenre()));
-                }
-            }
-        }
     }
 
     @Override
@@ -55,15 +48,18 @@ public class GenreAdapter extends BaseAdapter {
         //map to song layout
         LinearLayout genreLay = (LinearLayout) genreInf.inflate
                 (R.layout.genre, parent, false);
+
         //get title and artist views
         TextView genreView = (TextView) genreLay.findViewById(R.id.genre);
         CheckBox checkbox = (CheckBox) genreLay.findViewById(R.id.check_box);
-        //get song using position
-        Genre currGenre = genres.get(position);
 
-        //get title and artist strings
-        checkbox.setChecked(currGenre.isSelected());
-        genreView.setText(currGenre.getGenre());
+        //get genre using position
+        Genre currentGenre = genres.get(position);
+
+        // check the box if selected and
+        checkbox.setChecked(currentGenre.isSelected());
+        genreView.setText(currentGenre.getGenre());
+
         //set position as tag
         genreLay.setTag(position);
         return genreLay;

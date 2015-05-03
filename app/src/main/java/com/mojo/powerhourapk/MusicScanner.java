@@ -1,10 +1,13 @@
 package com.mojo.powerhourapk;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
+
+import com.mojo.powerhourapk.Objects.Song;
 
 import java.util.ArrayList;
 
@@ -15,27 +18,29 @@ import java.util.ArrayList;
  */
 public class MusicScanner {
 
-    private static final String LOG_TAG = MainActivity.class.getSimpleName();
-    private static final String[] mediaProjection = {
+    private final String LOG_TAG = MainActivity.class.getSimpleName();
+    private final String[] mediaProjection = {
             MediaStore.Audio.Media._ID,
             MediaStore.Audio.Media.ARTIST,
             MediaStore.Audio.Media.DATA,
             MediaStore.Audio.Media.TITLE,
             MediaStore.Audio.Media.DURATION
     };
-    private static final String[] genresProjection = {
+    private final String[] genresProjection = {
             MediaStore.Audio.Genres.NAME,
             MediaStore.Audio.Genres._ID
     };
-    private static Cursor genresCursor;
-    private static int count;
+    private Cursor genresCursor;
+    private int count;
 
-    public static ArrayList getMusicFromStorage(Context context) {
+    private ContentResolver musicResolver;
+
+    public ArrayList getMusicFromStorage(Context context, ContentResolver contentResolver) {
         Log.d(LOG_TAG, "Getting music from storage...");
         ArrayList<Song> songs = new ArrayList<>();
         String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
 
-        Cursor mediaCursor = context.getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+        Cursor mediaCursor = contentResolver.query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                 mediaProjection, selection, null, null);
 
         int artist_column_index = mediaCursor
@@ -86,6 +91,8 @@ public class MusicScanner {
 
         return songs;
     }
+
+
 }
 
 

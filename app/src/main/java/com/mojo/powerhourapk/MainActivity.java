@@ -1,13 +1,14 @@
 package com.mojo.powerhourapk;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.ContentResolver;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
@@ -19,6 +20,7 @@ import android.widget.TextView;
 
 import com.mojo.powerhourapk.Objects.Challenge;
 import com.mojo.powerhourapk.Objects.Genre;
+import com.mojo.powerhourapk.Objects.Song;
 
 import java.util.ArrayList;
 
@@ -27,83 +29,109 @@ import java.util.ArrayList;
 
 public class MainActivity extends Activity {
 
-    // media variables
     public static Notification notification;
-    public static TimedFunctions timers;
     public static Context context;
-    public static ContentResolver musicResolver;
-    public static SongAdapter songAdapter;
-    public static String burp = "R.raw.burp.mp3";
-    public static String can_opening = "R.raw.can_opening.mp3";
-    public static Button pause_button;
-    public static Button play_button;
-    public static ArrayList<Genre> genres;
     public static GenreAdapter genreAdapter;
     public static boolean gameRunning = false;
-    public static ArrayList<Song> songs;
-    private static TextView timer;
-    private static TextView challengeTimer;
-    private static TextView challengeText;
-    private static TextView shotsText;
-    private static TextView beersText;
-    private static TextView ouncesText;
-    private static TextView songTitle;
-    private static TextView songArtist;
-    private static int shots = 0;
-    private static int beers = 0;
+    private static Media media;
     private static SharedPreferences preferences;
-    private static double ounces = 0;
     private final String LOG_TAG = MainActivity.class.getSimpleName();
+    public Button pause_button;
+    public Button play_button;
+    private TimerService timerService;
+    private Intent timerIntent;
+    private SongAdapter songAdapter;
+    private TextView timer;
+    private TextView challengeTimer;
+    private TextView challengeText;
+    private TextView shotsText;
+    private TextView beersText;
+    private TextView ouncesText;
+    private TextView songTitle;
+    private TextView songArtist;
     private boolean isPaused;
+    private ArrayList<Song> songs;
+    private ArrayList<Genre> genres;
 
-    public static void updateSongText(String title, String artist) {
-        songTitle.setText(title);
-        songArtist.setText(artist);
-    }
+    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (TimerService.UPDATE_INFORMATION.equals(intent.getAction())) {
 
-    public static void updateMainTimer(int gameMinutes, int formattedSeconds) {
-        timer.setText(gameMinutes + ":" + String.format("%02d", formattedSeconds));
-    }
+                int[] information = intent.getIntArrayExtra("INFORMATION");
+                double ounces = intent.getDoubleExtra("OUNCES", 0);
 
-    public static void updateChallengeTimer(int challengeMinutes, int formattedChallengeSeconds) {
-        challengeTimer.setText(challengeMinutes + ":" + String.format("%02d", formattedChallengeSeconds));
-    }
+                int shots = information[0];
+                int beers = information[1];
 
-    public static void updateChallengeText(Challenge challenge) {
-        challengeText.setText(challenge.getChallengeText());
-    }
+                shotsText.setText(Integer.toString(shots));
+                ouncesText.setText(Double.toString(ounces));
+                beersText.setText(Integer.toString(beers));
+            } else if (TimerService.UPDATE_TIME.equals(intent.getAction())) {
+                int[] timeArray = intent.getIntArrayExtra("TIME_ARRAY");
+                timer.setText(timeArray[0] + ":" + String.format("%02d", timeArray[1]));
+            } else if (TimerService.UPDATE_CHALLENGE_TIMER.equals(intent.getAction())) {
+                int[] challengeTime = intent.getIntArrayExtra("CHALLENGE_TIME");
+                challengeTimer.setText(challengeTime[0] + ":" + String.format("%02d", challengeTime[1]));
+            } else if (TimerService.UPDATE_CHALLENGE.equals(intent.getAction())) {
+                String challengeText = intent.getStringExtra("CHALLENGE_TEXT");
+                setChallengeText(challengeText);
+            } else if (TimerService.CLEAR_CHALLENGE.equals(intent.getAction())) {
+                challengeTimer.setText("");
+                challengeText.setText("");
+            } else if (TimerService.UPDATE_SONG.equals(intent.getAction())) {
+                String[] songInfo = intent.getStringArrayExtra("SONG_INFO");
+                songArtist.setText(songInfo[0]);
+                songTitle.setText(songInfo[1]);
+            }
 
-    public static void updateInformation() {
-        shots++;
-        double shotSize = 1.5;
+        }
+    };
 
-        if (preferences.getBoolean("one_ounce_key", false)) {
-            shotSize = 1;
+    private boolean mBinded;
+    private ServiceConnection timerServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            Log.i(LOG_TAG, "Service connected");
+            mBinded = true;
+            TimerService.LocalBinder binder = (TimerService.LocalBinder) service;
+            timerService = binder.getService();
+
+            if (gameRunning) {
+                int[] time = timerService.getTime();
+                String[] song = timerService.getSong();
+                Challenge challenge = timerService.getChallenge();
+                int[] challengeTime = timerService.getChallengeTime();
+
+                timer.setText(time[0] + ":" + String.format("%02d", time[1]));
+                songArtist.setText(song[0]);
+                songTitle.setText(song[1]);
+                if (timerService.isChallengeActive()) {
+                    challengeText.setText(challenge.getChallengeText());
+                    if (challenge.isTimed()) {
+                        challengeTimer.setText(challengeTime[0] + ":" + String.format("%02d", challengeTime[1]));
+                    }
+                }
+
+                timerService.sendInformation();
+
+            }
         }
 
-        if ((shots - (beers * (12 / shotSize))) * shotSize >= 12) {
-            ounces = 0;
-            beers++;
-            // add beer sound
-        } else {
-            ounces = ounces + shotSize;
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            Log.i(LOG_TAG, "Service disconnected");
+            mBinded = false;
         }
-
-        shotsText.setText(Integer.toString(shots));
-        ouncesText.setText(Double.toString(ounces));
-        beersText.setText(Integer.toString(beers));
-    }
-
-    public static void clearChallenge() {
-        challengeTimer.setText("");
-        challengeText.setText("");
-    }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.v(LOG_TAG, "Created");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        timerIntent = new Intent(this, TimerService.class);
 
         PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
 
@@ -112,30 +140,38 @@ public class MainActivity extends Activity {
         beersText = (TextView) findViewById(R.id.beers);
         challengeText = (TextView) findViewById(R.id.challenge);
         challengeTimer = (TextView) findViewById(R.id.chal_timer);
-        MainActivity.pause_button = (Button) findViewById(R.id.pause_button);
-        MainActivity.play_button = (Button) findViewById(R.id.play_button);
+        pause_button = (Button) findViewById(R.id.pause_button);
+        play_button = (Button) findViewById(R.id.play_button);
         songTitle = (TextView) findViewById(R.id.song_title);
         songArtist = (TextView) findViewById(R.id.song_artist);
         timer = (TextView) findViewById(R.id.timer);
-        MainActivity.pause_button.setEnabled(false);
 
         // TODO: Reload all UI elements
 
         context = this;
-        musicResolver = getContentResolver();
+        media = new Media(getApplicationContext(), getContentResolver());
 
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
         notification = new Notification(this);
+        pause_button.setEnabled(false);
 
         // Set up the action bar
         assert getActionBar() != null;
 
         // gets the master list of songs from the device
-        songs = MusicScanner.getMusicFromStorage(this);
+        songs = Media.getSongs();
+        genres = media.getGenres();
+
+        songAdapter = new SongAdapter(this, songs);
+        genreAdapter = new GenreAdapter(this, genres);
 
         // create the custom song and genre adapters
-        songAdapter = new SongAdapter(this, songs);
-        genreAdapter = new GenreAdapter(this, songs);
+        media.setGenreAdapter(genreAdapter);
+        media.setSongAdapter(songAdapter);
+
+
+        startService(timerIntent);
+        bindService(timerIntent, timerServiceConnection, BIND_AUTO_CREATE);
     }
 
     @Override
@@ -171,6 +207,15 @@ public class MainActivity extends Activity {
     public void onResume() {
         Log.v(LOG_TAG, "Resumed");
         super.onResume();
+
+        if (TimerService.isRunning()) {
+            play_button.setEnabled(false);
+
+            // enable the pause button if toggled
+            if (preferences.getBoolean("pause_key", true)) {
+                pause_button.setEnabled(true);
+            }
+        }
     }
 
     @Override
@@ -183,6 +228,8 @@ public class MainActivity extends Activity {
     public void onStart() {
         Log.v(LOG_TAG, "Started");
         super.onStart();
+
+        registerReceiver(broadcastReceiver, TimerService.getIntentFilter());
     }
 
     @Override
@@ -194,9 +241,10 @@ public class MainActivity extends Activity {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        //mp.stop();
 
-        // stop the service
+        // free resources
+        unbindService(timerServiceConnection);
+        unregisterReceiver(broadcastReceiver);
 
         if (notification.mNotificationManager != null) {
             notification.mNotificationManager.cancel(notification.mId);
@@ -205,6 +253,7 @@ public class MainActivity extends Activity {
         Log.v(LOG_TAG, "Destroyed");
     }
 
+    /*
     @Override
     public void onBackPressed() {
         new AlertDialog.Builder(this)
@@ -221,16 +270,17 @@ public class MainActivity extends Activity {
                 .setNegativeButton("No", null)
                 .show();
     }
+    */
 
     public void pauseButton(View view) {
         Log.d("Button: ", "pauseButton");
-        if (preferences.getBoolean("pause_key", true)) {
+        if (isPaused) {
             isPaused = false;
-            timers.resumeTimers();
+            timerService.resumeTimers();
             pause_button.setText(R.string.pause);
         } else {
             isPaused = true;
-            timers.stopTimers();
+            timerService.stopTimers();
             pause_button.setText(R.string.resume);
         }
     }
@@ -238,10 +288,9 @@ public class MainActivity extends Activity {
     public void playButton(View view) {
         gameRunning = true;
 
-        timers = new TimedFunctions(getApplicationContext());
-
-        timers.populateTimeLists();
-        timers.startGameTimers();
+        timerService.setUpTimers(getApplicationContext(), getContentResolver());
+        timerService.populateTimeLists();
+        timerService.startGameTimers();
 
         // enable the pause button if toggled
         if (preferences.getBoolean("pause_key", true)) {
@@ -253,5 +302,36 @@ public class MainActivity extends Activity {
 
     public void setChallengeText(String text) {
         challengeText.setText(text);
+    }
+
+    public void songPressed(View view) {
+        songs.get(Integer.parseInt(view.getTag().toString())).setSelected();
+        songAdapter.notifyDataSetChanged();
+    }
+
+    public void genrePressed(View view) {
+
+        genres.get(Integer.parseInt(view.getTag().toString())).setSelected();
+
+        if (genres.get(Integer.parseInt(view.getTag().toString())).isSelected()) {
+            for (int j = 0; j < songs.size(); j++) {
+                if (songs.get(j).getGenre() != null && (songs.get(j).getGenre()).equals(genres.get(Integer.parseInt(view.getTag().toString())).getGenre())) {
+                    if (!songs.get(j).isSelected()) {
+                        songs.get(j).setSelected();
+                    }
+                }
+            }
+        } else {
+            for (int j = 0; j < songs.size(); j++) {
+                if (songs.get(j).getGenre() != null && (songs.get(j).getGenre()).equals(genres.get(Integer.parseInt(view.getTag().toString())).getGenre())) {
+                    if (songs.get(j).isSelected()) {
+                        songs.get(j).setSelected();
+                    }
+                }
+            }
+        }
+
+        genreAdapter.notifyDataSetChanged();
+        songAdapter.notifyDataSetChanged();
     }
 }

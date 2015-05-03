@@ -9,29 +9,36 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.AdapterView;
 import android.widget.ListView;
+
+import com.mojo.powerhourapk.Objects.Genre;
+import com.mojo.powerhourapk.Objects.Song;
+
+import java.util.ArrayList;
 
 
 public class MusicActivity extends Activity {
 
-    private final String LOG_TAG = MainActivity.class.getSimpleName();
+    private final String LOG_TAG = MusicActivity.class.getSimpleName();
     private ListView songListView;
+    private ListView genreListView;
+    private SongAdapter songAdapter;
+    private Media media;
+    private ArrayList<Song> songs;
+    private ArrayList<Genre> genres;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_music);
 
-        songListView = (ListView) this.findViewById(R.id.music_list);
-        songListView.setAdapter(MainActivity.songAdapter);
+        media = new Media(this, getContentResolver());
 
-        songListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                songPressed(view);
-            }
-        });
+        songs = Media.getSongs();
+        songAdapter = Media.getSongAdapter();
+
+        songListView = (ListView) this.findViewById(R.id.music_list);
+        songListView.setAdapter(songAdapter);
     }
 
     @Override
@@ -57,10 +64,10 @@ public class MusicActivity extends Activity {
     }
 
     public void genreButton(View view) {
-        Dialog genreDialog = new Dialog(MainActivity.context);
+        Dialog genreDialog = new Dialog(MusicActivity.this);
         LayoutInflater li = (LayoutInflater) MainActivity.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        final View genre_view = li.inflate(R.layout.genreselctor, null, false);
-        final ListView list = (ListView) genre_view.findViewById(R.id.genre_list);
+        final View genre_view = li.inflate(R.layout.genre_selector, null, false);
+        genreListView = (ListView) genre_view.findViewById(R.id.genre_list);
 
         WindowManager.LayoutParams params = new WindowManager.LayoutParams();
         params.copyFrom(genreDialog.getWindow().getAttributes());
@@ -68,44 +75,13 @@ public class MusicActivity extends Activity {
         params.height = WindowManager.LayoutParams.MATCH_PARENT;
         genreDialog.getWindow().setAttributes(params);
 
-        list.setAdapter(MainActivity.genreAdapter);
+        final GenreAdapter genreAdapter = media.getGenreAdapter();
+
+        genreListView.setAdapter(genreAdapter);
+
 
         genreDialog.setTitle("Select Genres to Include");
         genreDialog.setContentView(genre_view);
         genreDialog.show();
-    }
-
-    public void genrePressed(View view) {
-        MainActivity.genres.get(Integer.parseInt(view.getTag().toString())).setSelected();
-
-        //   for(int i = 0; i < genres.size(); i++) {
-        if (MainActivity.genres.get(Integer.parseInt(view.getTag().toString())).isSelected()) {
-
-            for (int j = 0; j < MainActivity.songs.size(); j++) {
-                if (MainActivity.songs.get(j).getGenre() != null && (MainActivity.songs.get(j).getGenre()).equals(MainActivity.genres.get(Integer.parseInt(view.getTag().toString())).getGenre())) {
-                    if (!MainActivity.songs.get(j).isSelected()) {
-                        MainActivity.songs.get(j).setSelected();
-                    }
-                }
-            }
-            // }
-
-
-        } else {
-            for (int j = 0; j < MainActivity.songs.size(); j++) {
-                if (MainActivity.songs.get(j).getGenre() != null && (MainActivity.songs.get(j).getGenre()).equals(MainActivity.genres.get(Integer.parseInt(view.getTag().toString())).getGenre())) {
-                    if (MainActivity.songs.get(j).isSelected()) {
-                        MainActivity.songs.get(j).setSelected();
-                    }
-                }
-            }
-        }
-        MainActivity.genreAdapter.notifyDataSetChanged();
-        MainActivity.songAdapter.notifyDataSetChanged();
-    }
-
-    public void songPressed(View view) {
-        (MainActivity.songs.get(Integer.parseInt(view.getTag().toString()))).setSelected();
-        MainActivity.songAdapter.notifyDataSetChanged();
     }
 }

@@ -7,7 +7,11 @@ import android.media.MediaPlayer;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.mojo.powerhourapk.Objects.Genre;
+import com.mojo.powerhourapk.Objects.Song;
+
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Random;
 
 /**
@@ -15,19 +19,58 @@ import java.util.Random;
  */
 public class Media {
 
-    // media variables
-    private static final MediaPlayer mp = new MediaPlayer();
-    private static final Random randomGenerator = new Random();
-    public static ContentResolver musicResolver;
-    public static String burp = "R.raw.burp.mp3";
-    public static String can_opening = "R.raw.can_opening.mp3";
-    public static Song currentSong;
     private static SongAdapter songAdapter;
-    private final String LOG_TAG = MainActivity.class.getSimpleName();
+    private static GenreAdapter genreAdapter;
+    private static ArrayList<Song> songs;
+    private static ArrayList<Genre> genres = new ArrayList<Genre>();
+    // media variables
+    private final MediaPlayer mp = new MediaPlayer();
+    private final Random randomGenerator = new Random();
+    private final String LOG_TAG = Media.class.getSimpleName();
+    public ContentResolver musicResolver;
+    public String burp = "R.raw.burp.mp3";
+    public String can_opening = "R.raw.can_opening.mp3";
+    public Song currentSong;
+    private MusicScanner musicScanner = new MusicScanner();
+
+    public Media(Context context, ContentResolver contentResolver) {
+        // set up the list of songs
+        songs = musicScanner.getMusicFromStorage(context, contentResolver);
+
+        // set up the list of genres
+        for (int i = 0; i < songs.size(); i++) {
+            if (!Genre.genres.contains(songs.get(i).getGenre())) {
+                if (songs.get(i).getGenre() != null) {
+                    genres.add(new Genre(songs.get(i).getGenre()));
+                }
+            }
+        }
+
+    }
+
+    public static ArrayList<Song> getSongs() {
+        return songs;
+    }
+
+    public static void setSongs(ArrayList<Song> songs) {
+        Media.songs = songs;
+    }
+
+    public static SongAdapter getSongAdapter() {
+        return songAdapter;
+    }
+
+    public void setSongAdapter(SongAdapter songAdapter) {
+        Media.songAdapter = songAdapter;
+    }
+
+    public ArrayList<Genre> getGenres() {
+        return genres;
+    }
 
     public Song getRandomSong() {
-        int index = randomGenerator.nextInt(MainActivity.songs.size());
-        return MainActivity.songs.get(index);
+        int index = randomGenerator.nextInt(songs.size());
+        return songs.get(index);
     }
 
     public void playSongChangeSound(Context context) {
@@ -40,7 +83,10 @@ public class Media {
             Log.e(LOG_TAG, "Song change sound error");
         }
 
-        songChange.start();
+        if (!songChange.equals("")) {
+            songChange.start();
+        }
+
     }
 
     public void playBeerGoneSound(Context context) {
@@ -53,7 +99,13 @@ public class Media {
             Log.e(LOG_TAG, "Song change sound error");
         }
 
-        beerGone.start();
+        if (!beerGone.equals("")) {
+            beerGone.start();
+        }
+    }
+
+    public Song getCurrentSong() {
+        return currentSong;
     }
 
     public void playSong() {
@@ -73,24 +125,22 @@ public class Media {
                 mp.prepare();
                 mp.start();
 
-                //GameService.notification.updateNotification(currentSong.getArtist() + " - " + currentSong.getTitle());
-                TimedFunctions.notification.updateNotificationSong(currentSong.getTitle() + " - " + currentSong.getArtist());
-                MainActivity.updateSongText(currentSong.getTitle(), currentSong.getArtist());
+                TimerService.notification.updateNotificationSong(currentSong.getTitle() + " - " + currentSong.getArtist());
 
             } else {
                 Log.v(LOG_TAG, "Song not playable... checking if there are playable songs remaining");
                 int count = 0;
-                for (int i = 0; i < MainActivity.songs.size(); i++) {
-                    if (!MainActivity.songs.get(i).isSelected() ||
-                            MainActivity.songs.get(i).isPreviouslyPlayed()) {
+                for (int i = 0; i < songs.size(); i++) {
+                    if (!songs.get(i).isSelected() ||
+                            songs.get(i).isPreviouslyPlayed()) {
                         count++;
                     }
                 }
 
-                if (MainActivity.songs.size() == count) {
+                if (songs.size() == count) {
                     Log.v(LOG_TAG, "No playable songs... Attempting to reset previouslyPlayed tag on all songs");
-                    for (int i = 0; i < MainActivity.songs.size(); i++) {
-                        MainActivity.songs.get(i).setPreviouslyPlayed(false);
+                    for (int i = 0; i < songs.size(); i++) {
+                        songs.get(i).setPreviouslyPlayed(false);
                     }
                     /*
                     AlertDialog alertDialog = new AlertDialog.Builder(this).create();
@@ -121,5 +171,13 @@ public class Media {
 
     public void resumeSong() {
         mp.start();
+    }
+
+    public GenreAdapter getGenreAdapter() {
+        return genreAdapter;
+    }
+
+    public void setGenreAdapter(GenreAdapter genreAdapter) {
+        Media.genreAdapter = genreAdapter;
     }
 }

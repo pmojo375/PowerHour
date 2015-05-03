@@ -1,9 +1,9 @@
-package com.mojo.powerhourapk;
+package com.mojo.powerhourapk.Objects;
 
 /**
  * Created by Mojsiejenko on 3/16/15.
  */
-class Song {
+public class Song {
 
     private static int count = 0;
     private final int id;
@@ -15,7 +15,7 @@ class Song {
     private boolean selected = true;
     private boolean previouslyPlayed = false;
 
-    Song(int song_id, String song_title, String song_artist, String song_location, int song_duration, String song_genre) {
+    public Song(int song_id, String song_title, String song_artist, String song_location, int song_duration, String song_genre) {
         id = song_id;
         title = song_title;
         artist = song_artist;

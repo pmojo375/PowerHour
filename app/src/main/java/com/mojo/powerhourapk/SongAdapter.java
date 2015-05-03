@@ -9,6 +9,8 @@ import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.mojo.powerhourapk.Objects.Song;
+
 import java.util.ArrayList;
 
 /**
@@ -30,15 +32,13 @@ public class SongAdapter extends BaseAdapter {
     }
 
     @Override
-    public Object getItem(int arg0) {
-        // TODO Auto-generated method stub
-        return null;
+    public Song getItem(int i) {
+        return songs.get(i);
     }
 
     @Override
-    public long getItemId(int arg0) {
-        // TODO Auto-generated method stub
-        return 0;
+    public long getItemId(int i) {
+        return songs.get(i).getId();
     }
 
     @Override
