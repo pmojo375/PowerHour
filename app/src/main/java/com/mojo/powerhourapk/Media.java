@@ -1,8 +1,11 @@
 package com.mojo.powerhourapk;
 
+import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -28,14 +31,17 @@ public class Media {
     private final Random randomGenerator = new Random();
     private final String LOG_TAG = Media.class.getSimpleName();
     public ContentResolver musicResolver;
-    public String burp = "R.raw.burp.mp3";
-    public String can_opening = "R.raw.can_opening.mp3";
+    // private int[] songChangeIds = {burp};
+    // private int[] beerGoneIds = {can_opening};
     public Song currentSong;
     private MusicScanner musicScanner = new MusicScanner();
+    private Context mContext;
 
     public Media(Context context, ContentResolver contentResolver) {
         // set up the list of songs
         songs = musicScanner.getMusicFromStorage(context, contentResolver);
+
+        mContext = context;
 
         // set up the list of genres
         for (int i = 0; i < songs.size(); i++) {
@@ -73,35 +79,48 @@ public class Media {
         return songs.get(index);
     }
 
-    public void playSongChangeSound(Context context) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        MediaPlayer songChange = new MediaPlayer();
-        try {
-            songChange.setDataSource(preferences.getString("song_sound_key", ""));
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.e(LOG_TAG, "Song change sound error");
-        }
+    public void playSongChangeSound() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        int resID = R.raw.burp;
+        //mContext.getResources().getIdentifier(preferences.getString("song_sound_key", "0"), "raw", mContext.getPackageName());
 
-        if (!songChange.equals("")) {
-            songChange.start();
-        }
+        //if(resID != 1) { // whatever no sound is in the array
+        MediaPlayer mPlayer = MediaPlayer.create(mContext, resID);
+        mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
 
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                mp.release();
+            }
+        });
+
+        if (!mPlayer.equals("")) {
+            mPlayer.start();
+        }
+        //  }
     }
 
-    public void playBeerGoneSound(Context context) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        MediaPlayer beerGone = new MediaPlayer();
-        try {
-            beerGone.setDataSource(preferences.getString("beer_finished_key", ""));
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.e(LOG_TAG, "Song change sound error");
-        }
+    public void playBeerGoneSound() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        int resID = R.raw.can_opening;
+        // mContext.getResources().getIdentifier(preferences.getString("beer_finished_key", "0"), "raw", mContext.getPackageName());
 
-        if (!beerGone.equals("")) {
-            beerGone.start();
+        ///  if(resID != 1) { // whatever no sound is in the array
+        MediaPlayer mPlayer = MediaPlayer.create(mContext, resID);
+        mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                mp.release();
+            }
+        });
+
+        if (!mPlayer.equals("")) {
+            mPlayer.start();
         }
+        //  }
     }
 
     public Song getCurrentSong() {
@@ -142,8 +161,8 @@ public class Media {
                     for (int i = 0; i < songs.size(); i++) {
                         songs.get(i).setPreviouslyPlayed(false);
                     }
-                    /*
-                    AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+
+                    AlertDialog alertDialog = new AlertDialog.Builder(mContext).create();
                     alertDialog.setTitle("Alert");
                     alertDialog.setMessage("No remaining playable songs! Songs will now play multiple times.");
                     alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
@@ -153,7 +172,7 @@ public class Media {
                                 }
                             });
                     alertDialog.show();
-                    */
+
                 }
                 playSong();
             }
@@ -179,5 +198,21 @@ public class Media {
 
     public void setGenreAdapter(GenreAdapter genreAdapter) {
         Media.genreAdapter = genreAdapter;
+    }
+
+    public void playChallengeSound() {
+        MediaPlayer mPlayer = MediaPlayer.create(mContext, R.raw.msu_fight);
+        mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                mp.release();
+            }
+        });
+
+        if (!mPlayer.equals("")) {
+            mPlayer.start();
+        }
     }
 }

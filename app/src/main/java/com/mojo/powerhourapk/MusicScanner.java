@@ -19,6 +19,7 @@ import java.util.ArrayList;
 public class MusicScanner {
 
     private final String LOG_TAG = MainActivity.class.getSimpleName();
+
     private final String[] mediaProjection = {
             MediaStore.Audio.Media._ID,
             MediaStore.Audio.Media.ARTIST,
@@ -87,7 +88,7 @@ public class MusicScanner {
             genresCursor.close();
         }
 
-        Log.e("MusicScanner", "Success. Songs: " + count);
+        Log.i("MusicScanner", "Success. Songs: " + count);
 
         return songs;
     }

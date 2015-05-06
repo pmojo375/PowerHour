@@ -65,7 +65,7 @@ public class MusicActivity extends Activity {
 
     public void genreButton(View view) {
         Dialog genreDialog = new Dialog(MusicActivity.this);
-        LayoutInflater li = (LayoutInflater) MainActivity.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        LayoutInflater li = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         final View genre_view = li.inflate(R.layout.genre_selector, null, false);
         genreListView = (ListView) genre_view.findViewById(R.id.genre_list);
 

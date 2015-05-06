@@ -29,15 +29,13 @@ import java.util.ArrayList;
 
 public class MainActivity extends Activity {
 
-    public static Notification notification;
-    public static Context context;
-    public static GenreAdapter genreAdapter;
-    public static boolean gameRunning = false;
-    private static Media media;
-    private static SharedPreferences preferences;
     private final String LOG_TAG = MainActivity.class.getSimpleName();
+    public GenreAdapter genreAdapter;
+    public boolean gameRunning = false;
     public Button pause_button;
     public Button play_button;
+    private Media media;
+    private SharedPreferences preferences;
     private TimerService timerService;
     private Intent timerIntent;
     private SongAdapter songAdapter;
@@ -148,11 +146,9 @@ public class MainActivity extends Activity {
 
         // TODO: Reload all UI elements
 
-        context = this;
         media = new Media(getApplicationContext(), getContentResolver());
 
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        notification = new Notification(this);
         pause_button.setEnabled(false);
 
         // Set up the action bar
@@ -246,31 +242,8 @@ public class MainActivity extends Activity {
         unbindService(timerServiceConnection);
         unregisterReceiver(broadcastReceiver);
 
-        if (notification.mNotificationManager != null) {
-            notification.mNotificationManager.cancel(notification.mId);
-        }
-
         Log.v(LOG_TAG, "Destroyed");
     }
-
-    /*
-    @Override
-    public void onBackPressed() {
-        new AlertDialog.Builder(this)
-                .setIcon(android.R.drawable.ic_dialog_alert)
-                .setTitle("Closing Activity")
-                .setMessage("Are you sure you want to close this activity?")
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        finish();
-                    }
-
-                })
-                .setNegativeButton("No", null)
-                .show();
-    }
-    */
 
     public void pauseButton(View view) {
         Log.d("Button: ", "pauseButton");
@@ -288,7 +261,7 @@ public class MainActivity extends Activity {
     public void playButton(View view) {
         gameRunning = true;
 
-        timerService.setUpTimers(getApplicationContext(), getContentResolver());
+        timerService.setUpTimers(getContentResolver());
         timerService.populateTimeLists();
         timerService.startGameTimers();
 

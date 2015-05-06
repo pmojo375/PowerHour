@@ -15,7 +15,7 @@
         android:title="@string/pref_pause_title" />
 
     <ListPreference
-        android:defaultValue="@string/pref_song_change_default"
+        android:defaultValue="@integer/pref_song_change_default"
         android:entries="@array/pref_song_change_entries"
         android:entryValues="@array/pref_song_change_values"
         android:key="song_sound_key"
@@ -23,7 +23,7 @@
 
 
     <ListPreference
-        android:defaultValue="@string/pref_beer_finished_default"
+        android:defaultValue="@integer/pref_beer_finished_default"
         android:entries="@array/pref_beer_finished_entries"
         android:entryValues="@array/pref_beer_finished_values"
         android:key="beer_finished_key"
@@ -37,7 +37,7 @@
         android:title="@string/pref_duration_title" />
 
     <ListPreference
-        android:defaultValue="@string/pref_song_change_default"
+        android:defaultValue="@string/pref_challenge_frequency_default"
         android:entries="@array/pref_challenge_frequency_entries"
         android:entryValues="@array/pref_challenge_frequency_values"
         android:key="challenge_frequency_key"

@@ -19,15 +19,19 @@
 
     <string-array name="pref_song_change_entries">
         <item>Burp</item>
+        <!--
         <item>Shots! Shots! Shots!</item>
         <item>Ahhhhh...</item>
+        -->
         <item>Sound Disabled</item>
     </string-array>
 
     <string-array name="pref_beer_finished_entries">
         <item>Cracking a Beer</item>
+        <!--
         <item>Bottle Shattering</item>
         <item>Crushing a Can</item>
+        -->
         <item>Sound Disabled</item>
     </string-array>
 
@@ -47,17 +51,21 @@
     </string-array>
 
     <string-array name="pref_song_change_values">
-        <item>burp.mp3</item>
+        <item>0</item>
+        <!--
         <item>shots.mp3</item>
         <item>drinking.mp3</item>
-        <item>null</item>
+        -->
+        <item>1</item>
     </string-array>
 
     <string-array name="pref_beer_finished_values">
-        <item>can_opening.mp3</item>
+        <item>0</item>
+        <!--
         <item>bottle_shattering.mp3</item>
         <item>can_crushing.mp3</item>
-        <item>null</item>
+        -->
+        <item>1</item>
     </string-array>
 
     <!-- Settings Titles -->
@@ -72,8 +80,8 @@
     <!-- Settings Defaults -->
     <string name="pref_duration_default">60</string>
     <string name="pref_challenge_frequency_default">5</string>
-    <string name="pref_song_change_default">burp.mp3</string>
-    <string name="pref_beer_finished_default">can_opening.mp3</string>
+    <integer name="pref_song_change_default">0</integer>
+    <integer name="pref_beer_finished_default">0</integer>
 
     <!-- Settings Summary -->
     <string name="pref_one_ounce_summaryOn">Using 1 ounce shot pours</string>

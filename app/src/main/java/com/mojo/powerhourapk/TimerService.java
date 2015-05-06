@@ -2,7 +2,6 @@ package com.mojo.powerhourapk;
 
 import android.app.Service;
 import android.content.ContentResolver;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -54,13 +53,10 @@ public class TimerService extends Service {
     private Challenge currentChallenge;
     private ArrayList<Long> challengeTimes = new ArrayList<Long>();
     private ArrayList<Long> minuteTimes = new ArrayList<Long>();
-    private CountDownTimer challengeTimer;
-    private Context context;
     private Media media;
     private int i = 0;
     private int j = 0;
     private long elapsedTime = 0;
-    private long challengeValue = 0;
     private boolean challengeActive = false;
     private int challengeSeconds2;
     private Intent intent;
@@ -72,6 +68,7 @@ public class TimerService extends Service {
         return running;
     }
 
+    // builds and returns an intent filter for receiving broadcasts
     public static IntentFilter getIntentFilter() {
         IntentFilter filter = new IntentFilter();
         filter.addAction(UPDATE_CHALLENGE);
@@ -92,6 +89,7 @@ public class TimerService extends Service {
         Song song = media.getCurrentSong();
 
         String[] songInfo = {song.getArtist(), song.getTitle()};
+        Log.v(LOG_TAG, song.getArtist());
         return songInfo;
     }
 
@@ -108,15 +106,16 @@ public class TimerService extends Service {
         return challengeActive;
     }
 
-    public void setUpTimers(Context context, ContentResolver contentResolver) {
-        this.context = context;
-        PreferenceManager.setDefaultValues(context, R.xml.pref_general, false);
-        preferences = PreferenceManager.getDefaultSharedPreferences(context);
+    // initializes the service and starts the timers
+    public void setUpTimers(ContentResolver contentResolver) {
 
-        notification = new Notification(context);
+        PreferenceManager.setDefaultValues(getApplicationContext(), R.xml.pref_general, false);
+        preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
+        notification = new Notification(getApplicationContext());
         notification.createNotification();
 
-        media = new Media(context, contentResolver);
+        media = new Media(getApplicationContext(), contentResolver);
         media.playSong();
 
         Intent intent = new Intent(UPDATE_SONG);
@@ -165,7 +164,7 @@ public class TimerService extends Service {
                 int[] timeArray = {gameMinutes, formattedSeconds};
                 intent = new Intent(UPDATE_TIME);
                 intent.putExtra("TIME_ARRAY", timeArray);
-                context.sendBroadcast(intent);
+                sendBroadcast(intent);
 
                 // update the notification with the current time
                 notification.updateNotificationTime("Powerhour - Time: " + gameMinutes + ":" + String.format("%02d", formattedSeconds));
@@ -176,13 +175,14 @@ public class TimerService extends Service {
                     shots++;
                     double shotSize = 1.5;
 
+                    // accounts for the 1 ounce shot setting
                     if (preferences.getBoolean("one_ounce_key", false)) {
                         shotSize = 1;
                     }
 
                     if ((shots - (beers * (12 / shotSize))) * shotSize >= 12) {
                         beers++;
-                        media.playBeerGoneSound(context);
+                        media.playBeerGoneSound();
                         ounces = 0;
                     } else {
                         ounces = ounces + shotSize; // do not do this when app starts up
@@ -192,12 +192,13 @@ public class TimerService extends Service {
 
                     intent = new Intent(UPDATE_INFORMATION);
                     intent.putExtra("INFORMATION", information);
+                    intent.putExtra("OUNCES", ounces);
                     sendBroadcast(intent);
 
                     // increment index for times
                     i++;
 
-                    media.playSongChangeSound(context);
+                    media.playSongChangeSound();
                     media.playSong();
 
                     Intent intent = new Intent(UPDATE_SONG);
@@ -205,12 +206,14 @@ public class TimerService extends Service {
                     intent.putExtra("SONG_INFO", songInfo);
                     sendBroadcast(intent);
 
-                    if (elapsedTime >= challengeTimes.get(j)) {
+                    if (elapsedTime > challengeTimes.get(j)) {
                         currentChallenge = challenges.getRandomChallenge();
-                        // play challenge reminder sound
+
+                        media.playChallengeSound();
+
                         challengeActive = true;
                         j++;
-                        challengeSeconds = (int) ((currentChallenge.getTime() * minute));
+                        challengeSeconds = (int) ((currentChallenge.getTime() * minute) + second);
 
                         // update challenge text broadcast
                         intent = new Intent(UPDATE_CHALLENGE);
@@ -246,6 +249,7 @@ public class TimerService extends Service {
                         intent = new Intent(UPDATE_CHALLENGE_TIMER);
                         int[] challengeTime = {challengeMinutes, formattedChallengeSeconds};
                         intent.putExtra("CHALLENGE_TIME", challengeTime);
+                        sendBroadcast(intent);
                     }
                 }
             }
@@ -272,14 +276,10 @@ public class TimerService extends Service {
         challengeMinutes = (int) milliseconds / minute;
 
         formattedChallengeSeconds = challengeSeconds2 - challengeMinutes * 60;
-        Log.v(LOG_TAG, challengeMinutes + " " + challengeSeconds + " " + formattedChallengeSeconds);
     }
 
     public void stopTimers() {
         mainTimer.cancel();
-        if (challengeValue > 0) { // TODO: this is not incremented
-            challengeTimer.cancel();
-        }
 
         media.pauseSong();
     }
