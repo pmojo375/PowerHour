@@ -76,6 +76,7 @@
     <string name="pref_challenge_frequency_title">Challenge Frequency</string>
     <string name="pref_song_change_title">Song Change Sound</string>
     <string name="pref_beer_finished_title">Beer Gone Sound</string>
+    <string name="pref_spotify_title">Spotify Integration</string>
 
     <!-- Settings Defaults -->
     <string name="pref_duration_default">60</string>
@@ -88,5 +89,7 @@
     <string name="pref_one_ounce_summaryOff">Using standard 1.5 ounce shot pours</string>
     <string name="pref_pause_summaryOn">Pause function is enabled</string>
     <string name="pref_pause_summaryOff">Pause function is disabled</string>
+    <string name="pref_spotify_summaryOn">Spotify integration is enabled</string>
+    <string name="pref_spotify_summaryOff">Spotify integration is disabled</string>
 
 </resources>

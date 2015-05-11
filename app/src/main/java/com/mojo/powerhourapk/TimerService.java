@@ -64,6 +64,7 @@ public class TimerService extends Service {
     private int beers;
     private double ounces;
 
+
     public static boolean isRunning() {
         return running;
     }

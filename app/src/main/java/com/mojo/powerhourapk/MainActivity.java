@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -21,19 +22,42 @@ import android.widget.TextView;
 import com.mojo.powerhourapk.Objects.Challenge;
 import com.mojo.powerhourapk.Objects.Genre;
 import com.mojo.powerhourapk.Objects.Song;
+import com.spotify.sdk.android.authentication.AuthenticationClient;
+import com.spotify.sdk.android.authentication.AuthenticationRequest;
+import com.spotify.sdk.android.authentication.AuthenticationResponse;
+import com.spotify.sdk.android.player.Config;
+import com.spotify.sdk.android.player.ConnectionStateCallback;
+import com.spotify.sdk.android.player.Player;
+import com.spotify.sdk.android.player.PlayerNotificationCallback;
+import com.spotify.sdk.android.player.PlayerState;
+import com.spotify.sdk.android.player.Spotify;
+import com.wrapper.spotify.Api;
+import com.wrapper.spotify.exceptions.WebApiException;
+import com.wrapper.spotify.models.Track;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 // TODO: add custom icon for app
 // TODO: further optimize code to match standards
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements
+        PlayerNotificationCallback, ConnectionStateCallback {
 
+    private static final String CLIENT_ID = "9b88ad7137d941dfa5f5be8b6e2e713a";
+    private static final String REDIRECT_URI = "http://0.0.0.0";
+    // Request code that will be passed together with authentication result to the onAuthenticationResult callback
+    // Can be any integer
+    private static final int REQUEST_CODE = 1337;
+    private static Api api;
+    private static String userUrl;
     private final String LOG_TAG = MainActivity.class.getSimpleName();
     public GenreAdapter genreAdapter;
     public boolean gameRunning = false;
     public Button pause_button;
     public Button play_button;
+    private List<Track> tracks;
     private Media media;
     private SharedPreferences preferences;
     private TimerService timerService;
@@ -50,7 +74,7 @@ public class MainActivity extends Activity {
     private boolean isPaused;
     private ArrayList<Song> songs;
     private ArrayList<Genre> genres;
-
+    private AuthenticationResponse response;
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -85,7 +109,7 @@ public class MainActivity extends Activity {
 
         }
     };
-
+    private Player mPlayer;
     private boolean mBinded;
     private ServiceConnection timerServiceConnection = new ServiceConnection() {
         @Override
@@ -94,6 +118,7 @@ public class MainActivity extends Activity {
             mBinded = true;
             TimerService.LocalBinder binder = (TimerService.LocalBinder) service;
             timerService = binder.getService();
+
 
             if (gameRunning) {
                 int[] time = timerService.getTime();
@@ -123,6 +148,101 @@ public class MainActivity extends Activity {
         }
     };
 
+    public static Api getApi() {
+        return api;
+    }
+
+    public static void setApi(Api _api) {
+        api = _api;
+
+        // get the user url
+        new RetrieveUserURL().execute(api);
+    }
+
+    public static String getUserUrl() {
+        return userUrl;
+    }
+
+    public static void setUserUrl(String _userUrl) {
+        userUrl = _userUrl;
+        Log.v("USER", userUrl);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        super.onActivityResult(requestCode, resultCode, intent);
+
+        // Check if result comes from the correct activity
+        if (requestCode == REQUEST_CODE) {
+            response = AuthenticationClient.getResponse(resultCode, intent);
+
+            if (response.getType() == AuthenticationResponse.Type.TOKEN) {
+
+                // build the spotify api with the token
+                new RetrieveAPI().execute(response);
+
+                Config playerConfig = new Config(this, response.getAccessToken(), CLIENT_ID);
+                mPlayer = Spotify.getPlayer(playerConfig, this, new Player.InitializationObserver() {
+                    @Override
+                    public void onInitialized(Player player) {
+//                        mPlayer.addConnectionStateCallback(MainActivity.this);
+                        //  mPlayer.addPlayerNotificationCallback(MainActivity.this);
+                    }
+
+                    @Override
+                    public void onError(Throwable throwable) {
+                        Log.e("MainActivity", "Could not initialize player: " + throwable.getMessage());
+                    }
+                });
+            }
+        }
+    }
+
+    @Override
+    public void onLoggedIn() {
+        Log.d("MainActivity", "User logged in");
+    }
+
+    @Override
+    public void onLoggedOut() {
+        Log.d("MainActivity", "User logged out");
+    }
+
+    @Override
+    public void onLoginFailed(Throwable error) {
+        Log.d("MainActivity", "Login failed");
+    }
+
+    @Override
+    public void onTemporaryError() {
+        Log.d("MainActivity", "Temporary error occurred");
+    }
+
+    @Override
+    public void onConnectionMessage(String message) {
+        Log.d("MainActivity", "Received connection message: " + message);
+    }
+
+    @Override
+    public void onPlaybackEvent(EventType eventType, PlayerState playerState) {
+        Log.d("MainActivity", "Playback event received: " + eventType.name());
+        switch (eventType) {
+            // Handle event type as necessary
+            default:
+                break;
+        }
+    }
+
+    @Override
+    public void onPlaybackError(ErrorType errorType, String errorDetails) {
+        Log.d("MainActivity", "Playback error received: " + errorType.name());
+        switch (errorType) {
+            // Handle error type as necessary
+            default:
+                break;
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.v(LOG_TAG, "Created");
@@ -144,7 +264,12 @@ public class MainActivity extends Activity {
         songArtist = (TextView) findViewById(R.id.song_artist);
         timer = (TextView) findViewById(R.id.timer);
 
-        // TODO: Reload all UI elements
+        AuthenticationRequest.Builder builder =
+                new AuthenticationRequest.Builder(CLIENT_ID, AuthenticationResponse.Type.TOKEN, REDIRECT_URI);
+        builder.setScopes(new String[]{"user-read-private", "streaming"});
+        AuthenticationRequest request = builder.build();
+
+        AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
 
         media = new Media(getApplicationContext(), getContentResolver());
 
@@ -164,7 +289,6 @@ public class MainActivity extends Activity {
         // create the custom song and genre adapters
         media.setGenreAdapter(genreAdapter);
         media.setSongAdapter(songAdapter);
-
 
         startService(timerIntent);
         bindService(timerIntent, timerServiceConnection, BIND_AUTO_CREATE);
@@ -306,5 +430,41 @@ public class MainActivity extends Activity {
 
         genreAdapter.notifyDataSetChanged();
         songAdapter.notifyDataSetChanged();
+    }
+}
+
+class RetrieveAPI extends AsyncTask<AuthenticationResponse, Void, Api> {
+
+    protected Api doInBackground(AuthenticationResponse... response) {
+        Api api = Api.builder().accessToken(response[0].getAccessToken()).build();
+        return api;
+    }
+
+    protected void onPostExecute(Api api) {
+        MainActivity.setApi(api);
+    }
+}
+
+class RetrieveUserURL extends AsyncTask<Api, Void, String> {
+
+    private Exception exception;
+    private String userUrl;
+
+    protected String doInBackground(Api... api) {
+        try {
+            userUrl = api[0].getMe().build().get().getId();
+            return userUrl;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        } catch (WebApiException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+    }
+
+    protected void onPostExecute(String userUrl) {
+        MainActivity.setUserUrl(userUrl);
     }
 }

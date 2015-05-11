@@ -4,6 +4,11 @@ android {
     compileSdkVersion 21
     buildToolsVersion "21.1.2"
 
+    packagingOptions {
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
+    }
+
     defaultConfig {
         applicationId "com.mojo.powerhourapk"
         minSdkVersion 16
@@ -22,8 +27,34 @@ android {
     }
 }
 
+repositories {
+    mavenCentral()
+    flatDir {
+        dirs 'libs'
+    }
+}
+
 dependencies {
+
     compile fileTree(dir: 'libs', include: ['*.jar'])
+
+    compile('se.michaelthelin.spotify:spotify-web-api-java:1.4.20') {
+        exclude group: "commons-beanutils", module: "commons-beanutils"
+        exclude group: 'commons-logging', module: 'commons-logging'
+
+    }
+
+    compile 'commons-beanutils:commons-beanutils:20030211.134440'
+
+    // This library handles authentication and authorization
+    compile 'com.spotify.sdk:spotify-auth:1.0.0-beta10@aar'
+
+    // This library handles music playback
+    compile 'com.spotify.sdk:spotify-player:1.0.0-beta10@aar'
+
+    compile 'com.squareup.retrofit:retrofit:1.9.0'
+    compile 'com.squareup.okhttp:okhttp:2.2.0'
+
     compile 'com.android.support:support-v13:21.0.3'
     compile 'com.android.support:support-v4:21.0.3'
 }

@@ -43,4 +43,11 @@
         android:key="challenge_frequency_key"
         android:title="@string/pref_challenge_frequency_title" />
 
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="spotify_key"
+        android:summaryOff="@string/pref_spotify_summaryOff"
+        android:summaryOn="@string/pref_spotify_summaryOn"
+        android:title="@string/pref_spotify_title" />
+
 </PreferenceScreen>
